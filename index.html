@@ -15,9 +15,9 @@
         --bg: #fbfbff;
         --ink: #16213e;
         --muted: #667085;
-        --brand: #6c5ce7;   
-        --brand-2: #00c2ff; 
-        --brand-3: #00d68f; 
+        --brand: #6c5ce7;   /* playful purple */
+        --brand-2: #00c2ff; /* sky */
+        --brand-3: #00d68f; /* mint */
         --danger: #ef476f;
         --ok: #06d6a0;
         --card: #ffffff;
@@ -69,9 +69,14 @@
       button.ghost{ background:transparent; color:var(--ink); box-shadow:none; }
 
       main{ padding:32px 16px; }
-      .grid{ display:grid; gap:24px; grid-template-columns: 1.1fr .9fr; align-items:stretch; }
+      .grid{
+        display:grid; gap:24px; grid-template-columns: 1.1fr .9fr; align-items:stretch;
+      }
       @media (max-width: 860px){ .grid{ grid-template-columns: 1fr } }
-      .card{ background:var(--card); border-radius:var(--radius); box-shadow: var(--shadow); padding:20px; overflow:hidden; }
+      .card{
+        background:var(--card); border-radius:var(--radius); box-shadow: var(--shadow);
+        padding:20px; overflow:hidden;
+      }
       .welcome{ display:grid; gap:16px; }
       .big-title{ font-family:"Fredoka", sans-serif; font-weight:800; font-size: clamp(28px, 4vw, 44px); line-height:1.1 }
       .subtitle{ color:var(--muted); font-size:18px }
@@ -91,18 +96,11 @@
         width:80px; height:80px; border-radius:20px; display:grid; place-items:center;
         font-size:40px; background: linear-gradient(135deg, #fff, #f5f3ff);
         border:2px dashed #e9d5ff;
-        transition: transform 0.5s ease; /* ★ NYT ★ bounce effekt */
+        transition: transform .5s ease; /* bounce */
       }
       .level-box{ font-weight:800 }
       .xpbar{ height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
       .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), var(--brand-3)); transition: width .5s ease }
-      .quiz{ display:grid; gap:18px; }
-      .question{ font-size:20px; font-weight:800 }
-      .options{ display:grid; gap:10px }
-      .opt{
-        display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:#f8fafc; border:2px solid #e2e8f0;
-      }
-      .opt input{ transform: scale(1.2) }
 
       .muted{ color:var(--muted) }
       .small{ font-size:13px }
@@ -118,7 +116,7 @@
       }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(6px); }
 
-      /* ★ NYT ★ Konfetti style */
+      /* Confetti */
       .confetti {
         position: fixed;
         width: 10px;
@@ -130,6 +128,8 @@
       @keyframes fall {
         to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
       }
+      /* Bounce keyframes (triggeres via inline style JS) */
+      @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
     </style>
   </head>
   <body>
@@ -176,7 +176,7 @@
               <li>10 spørgsmål • multiple choice</li>
               <li>+10 XP pr. rigtigt svar</li>
               <li>XP-krav stiger pr. level (50, 70, 90...)</li>
-              <li><!-- ★ NYT ★ --> Perfekt runde = level op + konfetti</li>
+              <li>Perfekt runde (alle rigtige) = 1 level op + konfetti</li>
             </ul>
           </div>
         </div>
@@ -196,7 +196,7 @@
         <div class="grid">
           <div class="card">
             <h2 class="big-title">Kom i gang ✨</h2>
-            <form id="authForm" class="auth-form">
+            <form id="authForm" class="auth-form" autocomplete="off">
               <label for="name">Hvad hedder du?</label>
               <input id="name" name="name" required minlength="2" maxlength="24" />
               <label for="age">Hvor gammel er du?</label>
@@ -232,24 +232,25 @@
       <!-- Result -->
       <section id="result" style="display:none">
         <div class="card center">
-        <h2 id="resultTitle">Flot klaret! 🎯</h2>
+          <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
           <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong>.</p>
-
-          <!-- ★ NYT ★ fejl-oversigt -->
+          <div style="max-width:520px; margin: 0 auto 16px">
+            <div class="pet" style="justify-content:center">
+              <div class="bubble" id="petEmojiResult">🐣</div>
+              <div>
+                <div class="level-box">Level <span id="levelTextResult">1</span></div>
+                <div class="xpbar"><span id="xpFillResult"></span></div>
+                <div class="small muted" id="xpLabelResult">0 / 50 XP til næste level</div>
+              </div>
+            </div>
+          </div>
+          <!-- Wrong answers -->
           <div id="wrongAnswers" style="margin-top:16px; text-align:left; display:none;">
             <h3>Forkerte svar:</h3>
             <ul id="wrongList"></ul>
           </div>
 
-          <div class="pet" style="justify-content:center">
-            <div class="bubble" id="petEmojiResult">🐣</div>
-            <div>
-              <div class="level-box">Level <span id="levelTextResult">1</span></div>
-              <div class="xpbar"><span id="xpFillResult"></span></div>
-              <div class="small muted" id="xpLabelResult">0 / 50 XP til næste level</div>
-            </div>
-          </div>
           <div class="row" style="justify-content:center; gap:10px">
             <button id="retryBtn">Prøv quizzen igen</button>
             <button class="secondary" id="homeBtn">Til velkomst</button>
@@ -259,6 +260,7 @@
     </main>
 
     <div id="toast" class="toast" aria-live="polite"></div>
+
     <script>
       // ===============================
       // State & XP Helpers (progressive XP)
@@ -268,7 +270,7 @@
       const STORAGE_KEY = 'esblag_user_v1';
       const XP_PER_CORRECT = 10; // +10 per correct answer
 
-      /** Progressive XP-kurve: 1→2: 50, 2→3: 70, 3→4: 90, ... */
+      // Progressive XP-kurve: 1→2: 50, 2→3: 70, 3→4: 90, ...
       function xpRequiredForLevel(level){ return 50 + Math.max(0,(level-1))*20; }
       function totalXpForLevel(level){ let t=0; for(let L=1; L<level; L++) t+=xpRequiredForLevel(L); return t; }
       function getLevel(xp){ let L=1; while(xp >= totalXpForLevel(L+1)) L++; return L; }
@@ -280,7 +282,7 @@
         return Math.round(100*into/need);
       }
 
-      /** ★ NYT ★: tydeligere udvikling af kæledyret pr. level */
+      // Tydeligere kæledyrs-udvikling
       function petForLevel(level){
         if(level<=1) return '🐣';
         if(level<=2) return '🐥';
@@ -289,9 +291,7 @@
         return '🐉';
       }
 
-      // ===============================
       // Storage + auth helpers
-      // ===============================
       function loadUser(){
         try{ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : null; }
         catch(e){ return null; }
@@ -299,9 +299,7 @@
       function saveUser(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser)); }
       function logout(){ localStorage.removeItem(STORAGE_KEY); currentUser=null; showSection('auth'); updateHeader(); }
 
-      // ===============================
       // UI helpers
-      // ===============================
       function updateHeader(){
         const badge = document.getElementById('userBadge');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -330,7 +328,7 @@
         document.getElementById('xpFill').style.width = percent + '%';
         document.getElementById('xpLabel').textContent = `${into} / ${need} XP til næste level`;
 
-        // Result section (viser nuværende state)
+        // Result section (spejler state)
         document.getElementById('petEmojiResult').textContent = petForLevel(level);
         document.getElementById('levelTextResult').textContent = level;
         document.getElementById('xpFillResult').style.width = percent + '%';
@@ -350,7 +348,7 @@
         setTimeout(() => t.classList.remove('show'), 2000);
       }
 
-      /** ★ NYT ★: konfetti + bounce ved level-up */
+      // Level-up effekter (bounce + konfetti)
       function playLevelUpEffects(){
         // Bounce begge kæledyr (welcome + result)
         ['petEmoji','petEmojiResult'].forEach(id=>{
@@ -362,8 +360,6 @@
         });
         launchConfetti(140);
       }
-
-      /** ★ NYT ★: simpel konfetti (ren JS/CSS) */
       function launchConfetti(n=120){
         for(let i=0;i<n;i++){
           const piece = document.createElement('div');
@@ -376,13 +372,8 @@
           piece.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
           piece.style.opacity = '0.9';
           piece.style.borderRadius = '2px';
-          piece.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
           piece.style.animationDuration = (1.8 + Math.random()*1.2) + 's';
-          piece.style.animationDelay = (Math.random()*0.2) + 's';
-          // lidt horisontal drift
-          piece.style.setProperty('--drift', ((Math.random()-0.5)*40)+'px');
           document.body.appendChild(piece);
-          // Fjern igen
           setTimeout(()=> piece.remove(), 3200);
         }
       }
@@ -403,8 +394,8 @@
         { text: 'Hvad er 9 × 3?', options: ['18','21','27','36'], correctIndex: 2 },
       ];
 
-      let qIndex = 0;               
-      let selections = [];          
+      let qIndex = 0;
+      let selections = [];
 
       function startQuiz(){
         qIndex = 0;
@@ -448,7 +439,7 @@
       }
 
       function finishQuiz(){
-        // Tæl rigtige og saml forkerte (★ NYT ★)
+        // Tæl rigtige og saml forkerte
         let correct = 0;
         const wrongItems = [];
         QUESTIONS.forEach((q, i) => {
@@ -463,38 +454,33 @@
           }
         });
 
-        // XP for rigtige svar
-        const baseXP = correct * XP_PER_CORRECT;
+        // Basis XP
+        let gained = correct * XP_PER_CORRECT;
 
-        // ★ NYT ★: Perfekt runde = garanteret level-up
-        const levelBefore = getLevel(currentUser.xp || 0);
-        let gained = baseXP;
-
+        // Perfekt runde = præcis ét level op (uanset base XP)
+        const xpBefore = currentUser.xp || 0;
+        const levelBefore = getLevel(xpBefore);
         if (correct === QUESTIONS.length){
-          // top op XP, så brugeren når næste level (uanset baseXP)
-          const L = getLevel(currentUser.xp || 0);
-          const need = xpRequiredForLevel(L);
-          const into = getXPIntoLevel(currentUser.xp || 0);
-          const toNext = Math.max(0, need - into);
-          gained += toNext;
-         const titleEl = document.getElementById('resultTitle');
-if (correct === QUESTIONS.length) {
-    if (titleEl) titleEl.textContent = 'Perfekt! 🌟';
-} else {
-    if (titleEl) titleEl.textContent = 'Flot klaret! 🎯';
-}
+          const targetXp = totalXpForLevel(levelBefore + 1);
+          gained = Math.max(0, targetXp - xpBefore); // top op til NÆSTE level – ikke mere
+          const titleEl = document.getElementById('resultTitle');
+          if (titleEl) titleEl.textContent = 'Perfekt! 🌟';
+        } else {
+          const titleEl = document.getElementById('resultTitle');
+          if (titleEl) titleEl.textContent = 'Flot klaret! 🎯';
+        }
 
-        // Opdater XP og beregn level efter
-        currentUser.xp = (currentUser.xp || 0) + gained;
+        // Anvend XP
+        currentUser.xp = xpBefore + gained;
         saveUser();
-        const levelAfter = getLevel(currentUser.xp || 0);
 
-        // Resultat-tal
+        // Udfyld resultatskærm
+        const levelAfter = getLevel(currentUser.xp || 0);
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('totalCount').textContent = QUESTIONS.length;
         document.getElementById('xpEarned').textContent = gained;
 
-        // ★ NYT ★: Vis forkerte svar — ellers “Alt korrekt!”
+        // Fejloversigt
         const wrongWrap = document.getElementById('wrongAnswers');
         const wrongList = document.getElementById('wrongList');
         if(wrongItems.length === 0){
@@ -504,18 +490,18 @@ if (correct === QUESTIONS.length) {
           wrongWrap.style.display = '';
           wrongList.innerHTML = wrongItems.map(item => `
             <li style="margin-bottom:10px; background:#fff1f2; border:1px solid #fecdd3; padding:8px 10px; border-radius:10px;">
-              <div class="q" style="font-weight:800;">${item.q}</div>
-              <div class="yours" style="color:#b91c1c;">Dit svar: ${item.your}</div>
-              <div class="correct" style="color:#065f46; font-weight:800;">Korrekt svar: ${item.right}</div>
+              <div style="font-weight:800;">${item.q}</div>
+              <div style="color:#b91c1c;">Dit svar: ${item.your}</div>
+              <div style="color:#065f46; font-weight:800;">Korrekt svar: ${item.right}</div>
             </li>
           `).join('');
         }
 
-        // Opdater UI-felter (badge, kæledyr, XP-bar)
+        // Opdater UI state (badge/pet/xp)
         updateHeader();
         updatePetWidgets();
 
-        // ★ NYT ★: Level-up effekter (toast + konfetti + bounce)
+        // Vis level-up effekter hvis vi gik op
         if (levelAfter > levelBefore){
           showToast(`🎉 Level up! ${levelBefore} → ${levelAfter}`);
           playLevelUpEffects();
@@ -524,11 +510,8 @@ if (correct === QUESTIONS.length) {
         showSection('result');
       }
 
-      // ===============================
       // Events
-      // ===============================
       document.getElementById('logoutBtn').addEventListener('click', logout);
-
       const authForm = document.getElementById('authForm');
       const authError = document.getElementById('authError');
       authForm.addEventListener('submit', (e) => {
@@ -548,13 +531,12 @@ if (correct === QUESTIONS.length) {
         }
         authError.style.display = 'none';
 
-        currentUser = { name, age, xp: 0 }; // streak fjernet i den nye model
+        currentUser = { name, age, xp: 0 };
         saveUser();
         updateHeader();
         updatePetWidgets();
         showSection('welcome');
       });
-
       document.getElementById('authReset').addEventListener('click', () => {
         authError.style.display = 'none';
       });
@@ -569,20 +551,19 @@ if (correct === QUESTIONS.length) {
       document.getElementById('retryBtn').addEventListener('click', startQuiz);
       document.getElementById('homeBtn').addEventListener('click', () => showSection('welcome'));
 
-      // ===============================
       // App Init
-      // ===============================
       (function init(){
         const existing = loadUser();
         if(existing){
           currentUser = existing;
+          // fallback hvis ældre storage ikke har xp
+          if (typeof currentUser.xp !== 'number') currentUser.xp = 0;
           updateHeader();
           updatePetWidgets();
           showSection('welcome');
         }else{
           showSection('auth');
         }
-        // Forbered første spørgsmål så DOM er klar
         renderQuestion();
       })();
     </script>
