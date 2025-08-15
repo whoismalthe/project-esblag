@@ -15,9 +15,9 @@
         --bg: #fbfbff;
         --ink: #16213e;
         --muted: #667085;
-        --brand: #6c5ce7;   /* playful purple */
-        --brand-2: #00c2ff; /* sky */
-        --brand-3: #00d68f; /* mint */
+        --brand: #6c5ce7;   
+        --brand-2: #00c2ff; 
+        --brand-3: #00d68f; 
         --danger: #ef476f;
         --ok: #06d6a0;
         --card: #ffffff;
@@ -69,14 +69,9 @@
       button.ghost{ background:transparent; color:var(--ink); box-shadow:none; }
 
       main{ padding:32px 16px; }
-      .grid{
-        display:grid; gap:24px; grid-template-columns: 1.1fr .9fr; align-items:stretch;
-      }
+      .grid{ display:grid; gap:24px; grid-template-columns: 1.1fr .9fr; align-items:stretch; }
       @media (max-width: 860px){ .grid{ grid-template-columns: 1fr } }
-      .card{
-        background:var(--card); border-radius:var(--radius); box-shadow: var(--shadow);
-        padding:20px; overflow:hidden;
-      }
+      .card{ background:var(--card); border-radius:var(--radius); box-shadow: var(--shadow); padding:20px; overflow:hidden; }
       .welcome{ display:grid; gap:16px; }
       .big-title{ font-family:"Fredoka", sans-serif; font-weight:800; font-size: clamp(28px, 4vw, 44px); line-height:1.1 }
       .subtitle{ color:var(--muted); font-size:18px }
@@ -96,11 +91,25 @@
         width:80px; height:80px; border-radius:20px; display:grid; place-items:center;
         font-size:40px; background: linear-gradient(135deg, #fff, #f5f3ff);
         border:2px dashed #e9d5ff;
-        transition: transform .5s ease; /* bounce */
+        transition: transform .5s ease;
       }
       .level-box{ font-weight:800 }
       .xpbar{ height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
       .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), var(--brand-3)); transition: width .5s ease }
+
+      .quiz{ display:grid; gap:18px; }
+      .question{ font-size:20px; font-weight:800 }
+
+      /* ★ NYT ★ Store, klikbare svar-knapper */
+      .options{ display:grid; gap:12px }
+      .answer-btn{
+        display:block; width:100%; text-align:left;
+        padding:14px 16px; border-radius:12px; border:2px solid #e2e8f0;
+        background:#f8fafc; font-weight:800; cursor:pointer;
+        transition: transform .04s ease, border-color .15s ease, background .15s ease;
+      }
+      .answer-btn:hover{ transform: translateY(-1px); }
+      .answer-btn.selected{ border-color: var(--brand); background:#eef2ff; }
 
       .muted{ color:var(--muted) }
       .small{ font-size:13px }
@@ -119,16 +128,14 @@
       /* Confetti */
       .confetti {
         position: fixed;
-        width: 10px;
-        height: 10px;
+        width: 10px; height: 10px;
         background-color: red;
         z-index: 9998;
         animation: fall linear forwards;
       }
-      @keyframes fall {
-        to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-      }
-      /* Bounce keyframes (triggeres via inline style JS) */
+      @keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+
+      /* Bounce keyframes */
       @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
     </style>
   </head>
@@ -176,7 +183,8 @@
               <li>10 spørgsmål • multiple choice</li>
               <li>+10 XP pr. rigtigt svar</li>
               <li>XP-krav stiger pr. level (50, 70, 90...)</li>
-              <li>Perfekt runde (alle rigtige) = 1 level op + konfetti</li>
+              <li>Perfekt runde = 1 level op + konfetti</li>
+              <li><!-- ★ NYT ★ --> Streak ≥ 2 giver +20% XP-bonus</li>
             </ul>
           </div>
         </div>
@@ -216,7 +224,7 @@
         <div class="card">
           <div class="row" style="justify-content:space-between; align-items:center">
             <div><strong>Quiz</strong> • <span id="qProgress">1 / 10</span></div>
-            <div class="small muted">+10 XP pr. rigtigt svar</div>
+            <div class="small muted"><!-- ★ NYT ★ --> Streak: <span id="streakBadgeQuiz">0</span></div>
           </div>
           <div class="quiz" style="margin-top:16px">
             <div id="qText" class="question">Spørgsmålstekst</div>
@@ -234,7 +242,7 @@
         <div class="card center">
           <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
-          <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong>.</p>
+          <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong> <span id="streakNote" class="small muted"></span>.</p>
           <div style="max-width:520px; margin: 0 auto 16px">
             <div class="pet" style="justify-content:center">
               <div class="bubble" id="petEmojiResult">🐣</div>
@@ -282,7 +290,16 @@
         return Math.round(100*into/need);
       }
 
-      // Tydeligere kæledyrs-udvikling
+      // Dato helpers til streak
+      function todayStr(){ return new Date().toISOString().slice(0,10); }
+      function isToday(dateStr){ return dateStr === todayStr(); }
+      function wasYesterday(dateStr){
+        if(!dateStr) return false;
+        const d=new Date(dateStr), y=new Date(); y.setDate(y.getDate()-1);
+        return d.toISOString().slice(0,10) === y.toISOString().slice(0,10);
+      }
+
+      // Kæledyr udvikling
       function petForLevel(level){
         if(level<=1) return '🐣';
         if(level<=2) return '🐥';
@@ -291,7 +308,7 @@
         return '🐉';
       }
 
-      // Storage + auth helpers
+      // Storage + auth
       function loadUser(){
         try{ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : null; }
         catch(e){ return null; }
@@ -305,7 +322,9 @@
         const logoutBtn = document.getElementById('logoutBtn');
         if(currentUser){
           const lvl = getLevel(currentUser.xp || 0);
-          badge.textContent = `${currentUser.name} • ${currentUser.age} år • Lvl ${lvl}`;
+          const streak = currentUser.streak || 0;           /* ★ NYT ★ */
+          const streakTxt = streak>0 ? ` • 🔥${streak}` : '';/* ★ NYT ★ */
+          badge.textContent = `${currentUser.name} • ${currentUser.age} år • Lvl ${lvl}${streakTxt}`;
           badge.style.display = '';
           logoutBtn.style.display = '';
         }else{
@@ -321,18 +340,22 @@
         const into = getXPIntoLevel(currentUser.xp || 0);
         const need = xpRequiredForLevel(level);
 
-        // Welcome section
+        // Welcome
         document.getElementById('welcomeName').textContent = currentUser.name;
         document.getElementById('petEmoji').textContent = petForLevel(level);
         document.getElementById('levelText').textContent = level;
         document.getElementById('xpFill').style.width = percent + '%';
         document.getElementById('xpLabel').textContent = `${into} / ${need} XP til næste level`;
 
-        // Result section (spejler state)
+        // Result
         document.getElementById('petEmojiResult').textContent = petForLevel(level);
         document.getElementById('levelTextResult').textContent = level;
         document.getElementById('xpFillResult').style.width = percent + '%';
         document.getElementById('xpLabelResult').textContent = `${into} / ${need} XP til næste level`;
+
+        // Quiz top streak badge
+        const sbq = document.getElementById('streakBadgeQuiz');    /* ★ NYT ★ */
+        if (sbq) sbq.textContent = (currentUser.streak||0);        /* ★ NYT ★ */
       }
 
       function showSection(id){
@@ -348,14 +371,13 @@
         setTimeout(() => t.classList.remove('show'), 2000);
       }
 
-      // Level-up effekter (bounce + konfetti)
+      // Level-up effekter
       function playLevelUpEffects(){
-        // Bounce begge kæledyr (welcome + result)
         ['petEmoji','petEmojiResult'].forEach(id=>{
           const el = document.getElementById(id);
           if(!el) return;
-          el.style.animation = 'none'; // reset
-          el.offsetHeight;             // force reflow
+          el.style.animation = 'none';
+          el.offsetHeight;
           el.style.animation = 'pop 800ms ease';
         });
         launchConfetti(140);
@@ -404,6 +426,7 @@
         showSection('quiz');
       }
 
+      // ★ NYT ★: store klikbare svar-knapper (uden radio inputs)
       function renderQuestion(){
         const q = QUESTIONS[qIndex];
         document.getElementById('qText').textContent = q.text;
@@ -412,24 +435,25 @@
         const box = document.getElementById('qOptions');
         box.innerHTML = '';
         q.options.forEach((opt, i) => {
-          const id = `opt-${qIndex}-${i}`;
-          const wrap = document.createElement('label');
-          wrap.className = 'opt';
-          wrap.htmlFor = id;
-          wrap.innerHTML = `
-            <input type="radio" name="q${qIndex}" id="${id}" ${selections[qIndex]===i?'checked':''} />
-            <span>${opt}</span>
-          `;
-          wrap.querySelector('input').addEventListener('change', () => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'answer-btn' + (selections[qIndex]===i ? ' selected' : '');
+          btn.textContent = opt;
+          btn.addEventListener('click', () => {
             selections[qIndex] = i;
+            // opdater visuel markering
+            [...box.querySelectorAll('.answer-btn')].forEach(b=>b.classList.remove('selected'));
+            btn.classList.add('selected');
           });
-          box.appendChild(wrap);
+          box.appendChild(btn);
         });
 
         document.getElementById('nextBtn').textContent = (qIndex === QUESTIONS.length - 1) ? 'Afslut' : 'Næste';
       }
 
       function nextQuestion(){
+        // Valgfrit: kræv svar før næste (kan aktiveres)
+        // if (selections[qIndex] == null) { alert('Vælg et svar'); return; }
         if(qIndex < QUESTIONS.length - 1){
           qIndex++;
           renderQuestion();
@@ -454,31 +478,67 @@
           }
         });
 
-        // Basis XP
-        let gained = correct * XP_PER_CORRECT;
-
-        // Perfekt runde = præcis ét level op (uanset base XP)
         const xpBefore = currentUser.xp || 0;
         const levelBefore = getLevel(xpBefore);
-        if (correct === QUESTIONS.length){
-          const targetXp = totalXpForLevel(levelBefore + 1);
-          gained = Math.max(0, targetXp - xpBefore); // top op til NÆSTE level – ikke mere
-          const titleEl = document.getElementById('resultTitle');
-          if (titleEl) titleEl.textContent = 'Perfekt! 🌟';
+
+        // Basis- XP for rigtige svar
+        const baseXP = correct * XP_PER_CORRECT;
+
+        // ★ NYT ★ Streak-logik: tæller KUN ved perfekt runde
+        let streak = currentUser.streak || 0;
+        let streakBonus = 0;
+        const perfect = (correct === QUESTIONS.length);
+
+        if (perfect){
+          if (isToday(currentUser.lastPlayDate)) {
+            // allerede registreret i dag -> ændr ikke streak
+          } else if (wasYesterday(currentUser.lastPlayDate)) {
+            streak = streak + 1;
+          } else {
+            streak = 1;
+          }
+          // bonus (vises i UI) – gælder kun hvis streak ≥ 2
+          if (streak >= 2){
+            streakBonus = Math.round(baseXP * 0.20); // +20% af baseXP
+          }
+          currentUser.lastPlayDate = todayStr();
         } else {
-          const titleEl = document.getElementById('resultTitle');
-          if (titleEl) titleEl.textContent = 'Flot klaret! 🎯';
+          // ikke perfekt: nulstil streak
+          streak = 0;
+          currentUser.lastPlayDate = todayStr();
+        }
+        currentUser.streak = streak;
+
+        // Perfekt runde = altid ét level op (topper op efter base+streak)
+        let gained = baseXP + streakBonus;
+        if (perfect){
+          const tempXp = xpBefore + gained;
+          const L = getLevel(tempXp);
+          const need = xpRequiredForLevel(L);
+          const into = tempXp - totalXpForLevel(L);
+          const toNext = Math.max(0, need - into);
+          gained += toNext; // præcis ét level op
         }
 
-        // Anvend XP
+        // Opdater XP og gem
         currentUser.xp = xpBefore + gained;
         saveUser();
 
         // Udfyld resultatskærm
         const levelAfter = getLevel(currentUser.xp || 0);
+        const titleEl = document.getElementById('resultTitle');
+        if (titleEl) titleEl.textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
+
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('totalCount').textContent = QUESTIONS.length;
         document.getElementById('xpEarned').textContent = gained;
+
+        // Streak-note (vis bonus eller nulstillet)
+        const sn = document.getElementById('streakNote');                /* ★ NYT ★ */
+        if (streakBonus > 0) sn.textContent = `(+${streakBonus} XP fra streak 🔥${streak})`; 
+        else if (perfect && streak === 1) sn.textContent = `(🔥1 — hold streak i morgen for bonus!)`;
+        else if (!perfect) sn.textContent = `(streak nulstillet)`;
+        else sn.textContent = '';
 
         // Fejloversigt
         const wrongWrap = document.getElementById('wrongAnswers');
@@ -497,11 +557,11 @@
           `).join('');
         }
 
-        // Opdater UI state (badge/pet/xp)
+        // Opdater UI state (badge/pet/xp + streak badge i quiz)
         updateHeader();
         updatePetWidgets();
 
-        // Vis level-up effekter hvis vi gik op
+        // Level-up effekter
         if (levelAfter > levelBefore){
           showToast(`🎉 Level up! ${levelBefore} → ${levelAfter}`);
           playLevelUpEffects();
@@ -531,7 +591,7 @@
         }
         authError.style.display = 'none';
 
-        currentUser = { name, age, xp: 0 };
+        currentUser = { name, age, xp: 0, lastPlayDate: null, streak: 0 }; /* ★ NYT ★ */
         saveUser();
         updateHeader();
         updatePetWidgets();
@@ -556,8 +616,8 @@
         const existing = loadUser();
         if(existing){
           currentUser = existing;
-          // fallback hvis ældre storage ikke har xp
           if (typeof currentUser.xp !== 'number') currentUser.xp = 0;
+          if (typeof currentUser.streak !== 'number') currentUser.streak = 0;     /* ★ NYT ★ */
           updateHeader();
           updatePetWidgets();
           showSection('welcome');
