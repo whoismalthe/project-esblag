@@ -103,11 +103,19 @@
       /* ★ NYT ★ Store, klikbare svar-knapper */
       .options{ display:grid; gap:12px }
       .answer-btn{
-        display:block; width:100%; text-align:left;
-        padding:14px 16px; border-radius:12px; border:2px solid #e2e8f0;
-        background:#f8fafc; font-weight:800; cursor:pointer;
-        transition: transform .04s ease, border-color .15s ease, background .15s ease;
-      }
+       display:block; width:100%; text-align:left;
+  padding:14px 16px; border-radius:12px; border:2px solid #cbd5e1;
+  background:#f1f5f9; 
+  color:var(--ink);              /* mørk tekst for høj kontrast */
+  font-weight:800; cursor:pointer;
+  transition: transform .04s ease, border-color .15s ease, background .15s ease, color .15s ease;
+}
+.answer-btn:hover{ transform: translateY(-1px); background:#e2e8f0; }
+.answer-btn.selected{ 
+  border-color: var(--brand); 
+  background: var(--brand); 
+  color:white;                  /* hvid tekst på valgt knap */
+}
       .answer-btn:hover{ transform: translateY(-1px); }
       .answer-btn.selected{ border-color: var(--brand); background:#eef2ff; }
 
@@ -508,6 +516,9 @@
           currentUser.lastPlayDate = todayStr();
         }
         currentUser.streak = streak;
+        saveUser();
+        updateHeader();
+        updatePetWidgets();
 
         // Perfekt runde = altid ét level op (topper op efter base+streak)
         let gained = baseXP + streakBonus;
@@ -556,10 +567,6 @@
             </li>
           `).join('');
         }
-
-        // Opdater UI state (badge/pet/xp + streak badge i quiz)
-        updateHeader();
-        updatePetWidgets();
 
         // Level-up effekter
         if (levelAfter > levelBefore){
