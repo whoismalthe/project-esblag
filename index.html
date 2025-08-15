@@ -109,7 +109,17 @@
       .streakbar > span{
         display:block; height:100%; width:0%;
         background: linear-gradient(90deg, #ffb703, var(--streak-fill));
-        transition: width .5s ease;
+        transition: width .5s ease, box-shadow .3s ease;
+      }
+      /* Puls/glød når streak-baren er maxet (2.0x) */
+      .streakbar > span.maxed{
+        box-shadow: 0 0 12px rgba(255,153,0,.9), 0 0 24px rgba(255,153,0,.5);
+        animation: streakPulse 1.2s ease-in-out infinite;
+      }
+      @keyframes streakPulse{
+        0%{ transform:scaleX(1); }
+        50%{ transform:scaleX(1.01); }
+        100%{ transform:scaleX(1); }
       }
 
       .quiz{ display:grid; gap:18px; }
@@ -158,6 +168,21 @@
 
       /* Bounce keyframes */
       @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+
+      /* 🔥 Streak-ikon: lille hop ved hover */
+      .streak-icon{
+        display:inline-block; cursor:default; transition: transform .2s ease;
+      }
+      .streak-icon:hover{
+        animation: hop 600ms ease;
+      }
+      @keyframes hop{
+        0%{transform:translateY(0)}
+        30%{transform:translateY(-6px)}
+        60%{transform:translateY(0)}
+        80%{transform:translateY(-3px)}
+        100%{transform:translateY(0)}
+      }
     </style>
   </head>
   <body>
@@ -190,9 +215,12 @@
                 <div class="xpbar"><span id="xpFill" style="width:0%"></span></div>
                 <div class="small muted" id="xpLabel">0 / 50 XP til næste level</div>
 
-                <!-- ★ NYT: Streak bar (velkomst) -->
+                <!-- Streak bar (velkomst) -->
                 <div class="small muted" style="margin-top:10px">
-                  Streak: 🔥<span id="streakCountWelcome">0</span> • Bonus: <span id="streakBonusWelcome">x1.0</span>
+                  Streak:
+                  <span class="streak-icon" aria-hidden="true" title="Din streak!">🔥</span>
+                  <span id="streakCountWelcome">0</span>
+                  • Bonus: <span id="streakBonusWelcome">x1.0</span>
                   <span id="streakMaxWelcome" class="small" style="color:#b45309; font-weight:800; display:none;">(maks)</span>
                 </div>
                 <div class="streakbar" aria-label="Streak-bonus fremgang" style="margin-top:6px; max-width:420px;">
@@ -255,7 +283,10 @@
         <div class="card">
           <div class="row" style="justify-content:space-between; align-items:center">
             <div><strong>Quiz</strong> • <span id="qProgress">1 / 10</span></div>
-            <div class="small muted">Streak: <span id="streakBadgeQuiz">0</span></div>
+            <div class="small muted">
+              Streak: <span class="streak-icon" aria-hidden="true" title="Din streak!">🔥</span>
+              <span id="streakBadgeQuiz">0</span>
+            </div>
           </div>
           <div class="quiz" style="margin-top:16px">
             <div id="qText" class="question">Spørgsmålstekst</div>
@@ -273,7 +304,8 @@
         <div class="card center">
           <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
-          <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong> <span id="streakNote" class="small muted"></span>.</p>
+          <!-- XP-tekst uden bonus-detaljer -->
+          <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong>.</p>
 
           <div style="max-width:520px; margin: 0 auto 16px">
             <div class="pet" style="justify-content:center">
@@ -283,9 +315,12 @@
                 <div class="xpbar"><span id="xpFillResult"></span></div>
                 <div class="small muted" id="xpLabelResult">0 / 50 XP til næste level</div>
 
-                <!-- ★ NYT: Streak bar (resultat) -->
+                <!-- Streak bar (resultat) -->
                 <div class="small muted" style="margin-top:10px">
-                  Streak: 🔥<span id="streakCountResult">0</span> • Bonus: <span id="streakBonusResult">x1.0</span>
+                  Streak:
+                  <span class="streak-icon" aria-hidden="true" title="Din streak!">🔥</span>
+                  <span id="streakCountResult">0</span>
+                  • Bonus: <span id="streakBonusResult">x1.0</span>
                   <span id="streakMaxResult" class="small" style="color:#b45309; font-weight:800; display:none;">(maks)</span>
                 </div>
                 <div class="streakbar" aria-label="Streak-bonus fremgang" style="margin-top:6px;">
@@ -381,7 +416,10 @@
         if (scw) scw.textContent = s;
         if (sbw) sbw.textContent = 'x' + multiplier.toFixed(1);
         if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
-        if (sfw) sfw.style.width = progress + '%';
+        if (sfw){
+          sfw.style.width = progress + '%';
+          sfw.classList.toggle('maxed', multiplier >= 2.0); // pulser/gløder når max
+        }
 
         // Result
         const scr = document.getElementById('streakCountResult');
@@ -391,7 +429,10 @@
         if (scr) scr.textContent = s;
         if (sbr) sbr.textContent = 'x' + multiplier.toFixed(1);
         if (smr) smr.style.display = (multiplier >= 2.0 ? '' : 'none');
-        if (sfr) sfr.style.width = progress + '%';
+        if (sfr){
+          sfr.style.width = progress + '%';
+          sfr.classList.toggle('maxed', multiplier >= 2.0); // pulser/gløder når max
+        }
 
         // Quiz top badge
         const sbq = document.getElementById('streakBadgeQuiz');
@@ -572,11 +613,7 @@
 
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('totalCount').textContent = QUESTIONS.length;
-        document.getElementById('xpEarned').textContent = earned;
-
-        // Streak-note tekst (beholdt – supplerer baren)
-        const sn = document.getElementById('streakNote');
-        sn.textContent = streak > 0 ? `(🔥${streak} • x${multiplier.toFixed(1)} bonus)` : `(streak nulstillet)`;
+        document.getElementById('xpEarned').textContent = earned; // kun XP-tal
 
         // Fejloversigt
         const wrongWrap = document.getElementById('wrongAnswers');
