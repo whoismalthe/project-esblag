@@ -232,7 +232,7 @@
       <!-- Result -->
       <section id="result" style="display:none">
         <div class="card center">
-          <h2>Flot klaret! 🎯</h2>
+        <h2 id="resultTitle">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
           <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong>.</p>
 
@@ -477,10 +477,12 @@
           const into = getXPIntoLevel(currentUser.xp || 0);
           const toNext = Math.max(0, need - into);
           gained += toNext;
-          document.getElementById('resultTitle').textContent = 'Perfekt! 🌟';
-        } else {
-          document.getElementById('resultTitle').textContent = 'Flot klaret! 🎯';
-        }
+         const titleEl = document.getElementById('resultTitle');
+if (correct === QUESTIONS.length) {
+    if (titleEl) titleEl.textContent = 'Perfekt! 🌟';
+} else {
+    if (titleEl) titleEl.textContent = 'Flot klaret! 🎯';
+}
 
         // Opdater XP og beregn level efter
         currentUser.xp = (currentUser.xp || 0) + gained;
