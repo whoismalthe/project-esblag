@@ -15,14 +15,18 @@
         --bg: #fbfbff;
         --ink: #16213e;
         --muted: #667085;
-        --brand: #6c5ce7;   
-        --brand-2: #00c2ff; 
-        --brand-3: #00d68f; 
+        --brand: #6c5ce7;   /* playful purple */
+        --brand-2: #00c2ff; /* sky */
+        --brand-3: #00d68f; /* mint */
         --danger: #ef476f;
         --ok: #06d6a0;
         --card: #ffffff;
         --shadow: 0 10px 30px rgba(22, 33, 62, 0.08);
         --radius: 16px;
+
+        --streak-bg: #ffe8cc;        /* lys orange baggrund */
+        --streak-fill: #ff9900;      /* orange fyld */
+        --streak-border: #ffd199;    /* lys kant */
       }
       *{box-sizing:border-box}
       html,body{height:100%}
@@ -96,6 +100,17 @@
       .level-box{ font-weight:800 }
       .xpbar{ height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
       .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), var(--brand-3)); transition: width .5s ease }
+
+      /* Streak bar */
+      .streakbar{
+        height:12px; border-radius:999px; overflow:hidden;
+        background: var(--streak-bg); border:2px solid var(--streak-border);
+      }
+      .streakbar > span{
+        display:block; height:100%; width:0%;
+        background: linear-gradient(90deg, #ffb703, var(--streak-fill));
+        transition: width .5s ease;
+      }
 
       .quiz{ display:grid; gap:18px; }
       .question{ font-size:20px; font-weight:800 }
@@ -174,9 +189,19 @@
                 <div class="level-box">Level <span id="levelText">1</span></div>
                 <div class="xpbar"><span id="xpFill" style="width:0%"></span></div>
                 <div class="small muted" id="xpLabel">0 / 50 XP til næste level</div>
+
+                <!-- ★ NYT: Streak bar (velkomst) -->
+                <div class="small muted" style="margin-top:10px">
+                  Streak: 🔥<span id="streakCountWelcome">0</span> • Bonus: <span id="streakBonusWelcome">x1.0</span>
+                  <span id="streakMaxWelcome" class="small" style="color:#b45309; font-weight:800; display:none;">(maks)</span>
+                </div>
+                <div class="streakbar" aria-label="Streak-bonus fremgang" style="margin-top:6px; max-width:420px;">
+                  <span id="streakFillWelcome" style="width:0%"></span>
+                </div>
               </div>
             </div>
-            <div class="row" style="margin-top:8px">
+
+            <div class="row" style="margin-top:12px">
               <button id="startQuizBtn">Start quiz</button>
               <button class="secondary" id="aboutBtn">Hvad er dette?</button>
             </div>
@@ -190,7 +215,7 @@
               <li>+10 XP pr. rigtigt svar</li>
               <li>XP-krav stiger pr. level (50, 70, 90...)</li>
               <li>Perfekt runde = +1 🔥 streak (XP-multiplikator)</li>
-              <li>Streak øger XP: x(1 + 0.2 × streak)</li>
+              <li>Streak-bonus maks = <strong>2.0×</strong></li>
             </ul>
           </div>
         </div>
@@ -249,6 +274,7 @@
           <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
           <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong> <span id="streakNote" class="small muted"></span>.</p>
+
           <div style="max-width:520px; margin: 0 auto 16px">
             <div class="pet" style="justify-content:center">
               <div class="bubble" id="petEmojiResult">🐣</div>
@@ -256,9 +282,19 @@
                 <div class="level-box">Level <span id="levelTextResult">1</span></div>
                 <div class="xpbar"><span id="xpFillResult"></span></div>
                 <div class="small muted" id="xpLabelResult">0 / 50 XP til næste level</div>
+
+                <!-- ★ NYT: Streak bar (resultat) -->
+                <div class="small muted" style="margin-top:10px">
+                  Streak: 🔥<span id="streakCountResult">0</span> • Bonus: <span id="streakBonusResult">x1.0</span>
+                  <span id="streakMaxResult" class="small" style="color:#b45309; font-weight:800; display:none;">(maks)</span>
+                </div>
+                <div class="streakbar" aria-label="Streak-bonus fremgang" style="margin-top:6px;">
+                  <span id="streakFillResult" style="width:0%"></span>
+                </div>
               </div>
             </div>
           </div>
+
           <!-- Wrong answers -->
           <div id="wrongAnswers" style="margin-top:16px; text-align:left; display:none;">
             <h3>Forkerte svar:</h3>
@@ -277,13 +313,14 @@
 
     <script>
       // ===============================
-      // State & XP Helpers (progressive XP)
+      // State & XP Helpers
       // ===============================
       let currentUser = null;
 
       const STORAGE_KEY = 'esblag_user_v1';
       const XP_PER_CORRECT = 10;               // +10 XP pr. korrekt svar
       const STREAK_STEP = 0.2;                 // +20% XP pr. streak-niveau
+      const STREAK_MAX_FOR_2X = 5;             // 5 perfekte runder giver 2.0x
 
       // Progressive XP-kurve: 1→2: 50, 2→3: 70, 3→4: 90, ...
       function xpRequiredForLevel(level){ return 50 + Math.max(0,(level-1))*20; }
@@ -297,7 +334,6 @@
         return Math.round(100*into/need);
       }
 
-      // Kæledyr udvikling
       function petForLevel(level){
         if(level<=1) return '🐣';
         if(level<=2) return '🐥';
@@ -331,6 +367,37 @@
         }
       }
 
+      function updateStreakBars(){
+        if(!currentUser) return;
+        const s = currentUser.streak || 0;
+        const multiplier = Math.min(1 + STREAK_STEP * s, 2.0);
+        const progress = Math.min(100, Math.round((s / STREAK_MAX_FOR_2X) * 100));
+
+        // Welcome
+        const scw = document.getElementById('streakCountWelcome');
+        const sbw = document.getElementById('streakBonusWelcome');
+        const smw = document.getElementById('streakMaxWelcome');
+        const sfw = document.getElementById('streakFillWelcome');
+        if (scw) scw.textContent = s;
+        if (sbw) sbw.textContent = 'x' + multiplier.toFixed(1);
+        if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
+        if (sfw) sfw.style.width = progress + '%';
+
+        // Result
+        const scr = document.getElementById('streakCountResult');
+        const sbr = document.getElementById('streakBonusResult');
+        const smr = document.getElementById('streakMaxResult');
+        const sfr = document.getElementById('streakFillResult');
+        if (scr) scr.textContent = s;
+        if (sbr) sbr.textContent = 'x' + multiplier.toFixed(1);
+        if (smr) smr.style.display = (multiplier >= 2.0 ? '' : 'none');
+        if (sfr) sfr.style.width = progress + '%';
+
+        // Quiz top badge
+        const sbq = document.getElementById('streakBadgeQuiz');
+        if (sbq) sbq.textContent = s;
+      }
+
       function updatePetWidgets(){
         if(!currentUser) return;
         const level = getLevel(currentUser.xp || 0);
@@ -351,9 +418,8 @@
         document.getElementById('xpFillResult').style.width = percent + '%';
         document.getElementById('xpLabelResult').textContent = `${into} / ${need} XP til næste level`;
 
-        // Quiz top streak badge
-        const sbq = document.getElementById('streakBadgeQuiz');
-        if (sbq) sbq.textContent = (currentUser.streak||0);
+        // Streak bars
+        updateStreakBars();
       }
 
       function showSection(id){
@@ -378,6 +444,7 @@
           el.offsetHeight;
           el.style.animation = 'pop 800ms ease';
         });
+        // Konfetti kun ved level-up (ikke ved streak)
         launchConfetti(140);
       }
       function launchConfetti(n=120){
@@ -480,18 +547,18 @@
         // Basis- XP for rigtige svar
         const baseXP = correct * XP_PER_CORRECT;
 
-        // Streak: +1 ved perfekt runde, ellers 0
+        // Streak-regler
         let streak = currentUser.streak || 0;
         const perfect = (correct === QUESTIONS.length);
         if (perfect){
-          streak = streak + 1;
+          streak = streak + 1;           // +1 streak
         } else {
-          streak = 0;
+          streak = 0;                    // reset streak
         }
         currentUser.streak = streak;
 
-        // XP-multiplikator baseret på streak (x(1 + 0.2 * streak))
-        const multiplier = 1 + STREAK_STEP * streak;
+        // Multiplier: x(1 + 0.2 * streak), max 2.0x
+        const multiplier = Math.min(1 + STREAK_STEP * streak, 2.0);
         const earned = Math.round(baseXP * multiplier);
 
         // Opdater XP og gem
@@ -507,13 +574,9 @@
         document.getElementById('totalCount').textContent = QUESTIONS.length;
         document.getElementById('xpEarned').textContent = earned;
 
-        // Streak-note (x-multiplikator)
+        // Streak-note tekst (beholdt – supplerer baren)
         const sn = document.getElementById('streakNote');
-        if (streak > 0){
-          sn.textContent = `(🔥${streak} • x${multiplier.toFixed(1)} bonus)`;
-        } else {
-          sn.textContent = `(streak nulstillet)`;
-        }
+        sn.textContent = streak > 0 ? `(🔥${streak} • x${multiplier.toFixed(1)} bonus)` : `(streak nulstillet)`;
 
         // Fejloversigt
         const wrongWrap = document.getElementById('wrongAnswers');
@@ -532,11 +595,11 @@
           `).join('');
         }
 
-        // Opdater UI-state (badge/pet/xp + streak badge)
+        // Opdater UI-state
         updateHeader();
-        updatePetWidgets();
+        updatePetWidgets(); // inkluderer updateStreakBars()
 
-        // Level-up effekter (kun når XP naturligt passerer grænsen)
+        // Level-up effekter (kun naturlig level-up)
         if (levelAfter > levelBefore){
           showToast(`🎉 Level up! ${levelBefore} → ${levelAfter}`);
           playLevelUpEffects();
@@ -604,4 +667,3 @@
     </script>
   </body>
 </html>
-
