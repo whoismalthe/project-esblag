@@ -109,17 +109,32 @@
       .streakbar > span{
         display:block; height:100%; width:0%;
         background: linear-gradient(90deg, #ffb703, var(--streak-fill));
-        transition: width .5s ease, box-shadow .3s ease;
+        transition: width .5s ease, box-shadow .3s ease, filter .3s ease, background-position .3s ease;
       }
-      /* Puls/glød når streak-baren er maxet (2.0x) */
+      /* ✨ Shimmer + glød, når streak-baren er maxet (2.0x) */
       .streakbar > span.maxed{
-        box-shadow: 0 0 12px rgba(255,153,0,.9), 0 0 24px rgba(255,153,0,.5);
-        animation: streakPulse 1.2s ease-in-out infinite;
+        background-image: linear-gradient(
+          90deg,
+          #ffc163 0%,
+          #ff9900 20%,
+          #ffd27a 40%,
+          #ff9900 60%,
+          #ffc163 80%,
+          #ff9900 100%
+        );
+        background-size: 200% 100%;
+        box-shadow: 0 0 14px rgba(255,153,0,.95), 0 0 30px rgba(255,153,0,.55);
+        filter: saturate(1.15);
+        animation: streakPulse 1.1s ease-in-out infinite, streakSheen 2.2s linear infinite;
       }
       @keyframes streakPulse{
-        0%{ transform:scaleX(1); }
-        50%{ transform:scaleX(1.01); }
-        100%{ transform:scaleX(1); }
+        0%{ transform:scaleX(1) }
+        50%{ transform:scaleX(1.02) }
+        100%{ transform:scaleX(1) }
+      }
+      @keyframes streakSheen{
+        0%{ background-position: 0% 0 }
+        100%{ background-position: 200% 0 }
       }
 
       .quiz{ display:grid; gap:18px; }
@@ -418,7 +433,7 @@
         if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
         if (sfw){
           sfw.style.width = progress + '%';
-          sfw.classList.toggle('maxed', multiplier >= 2.0); // pulser/gløder når max
+          sfw.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
         }
 
         // Result
@@ -431,7 +446,7 @@
         if (smr) smr.style.display = (multiplier >= 2.0 ? '' : 'none');
         if (sfr){
           sfr.style.width = progress + '%';
-          sfr.classList.toggle('maxed', multiplier >= 2.0); // pulser/gløder når max
+          sfr.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
         }
 
         // Quiz top badge
