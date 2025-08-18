@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Project ESBLAG — MVP</title>
+    <title>Project ESBLAG — MVP V1.16.0</title>
 
     <!-- Friendly, playful font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,6 +98,7 @@
         transition: transform .5s ease;
       }
       .level-box{ font-weight:800 }
+      .tier-line{ margin-top:4px; color:var(--muted); font-size:14px; font-weight:700 }
       .xpbar{ height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
       .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), var(--brand-3)); transition: width .5s ease }
 
@@ -111,7 +112,6 @@
         background: linear-gradient(90deg, #ffb703, var(--streak-fill));
         transition: width .5s ease, box-shadow .3s ease, filter .3s ease, background-position .3s ease;
       }
-      /* ✨ Shimmer + glød, når streak-baren er maxet (2.0x) */
       .streakbar > span.maxed{
         background-image: linear-gradient(
           90deg,
@@ -140,7 +140,6 @@
       .quiz{ display:grid; gap:18px; }
       .question{ font-size:20px; font-weight:800 }
 
-      /* Store, klikbare svar-knapper – høj kontrast */
       .options{ display:grid; gap:12px }
       .answer-btn{
         display:block; width:100%; text-align:left;
@@ -207,7 +206,7 @@
           <div class="logo">ES</div>
           <div>
             Project ESBLAG
-            <div class="small muted">Education Should Be Like A Game</div>
+            <div class="small muted">Education Should Be Like A Game • V1.16.0</div>
           </div>
         </div>
         <div class="spacer"></div>
@@ -224,10 +223,11 @@
             <div class="big-title">Velkommen, <span id="welcomeName">ven</span>! 🎉</div>
             <div class="subtitle">Læring skal føles som et spil. Tjen XP for rigtige svar, gå op i level — og se dit lille lærings-kæledyr udvikle sig!</div>
             <div class="pet">
-              <div class="bubble" id="petEmoji">🐣</div>
+              <div class="bubble" id="petEmoji" aria-label="Kæledyr emoji" title="Dit nuværende tier">🐣</div>
               <div>
                 <div class="level-box">Level <span id="levelText">1</span></div>
-                <div class="xpbar"><span id="xpFill" style="width:0%"></span></div>
+                <div class="tier-line" id="tierLine">Egg — Starter som et lille æg</div>
+                <div class="xpbar" style="margin-top:8px;"><span id="xpFill" style="width:0%"></span></div>
                 <div class="small muted" id="xpLabel">0 / 50 XP til næste level</div>
 
                 <!-- Streak bar (velkomst) -->
@@ -319,7 +319,6 @@
         <div class="card center">
           <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
           <p>Du fik <strong><span id="correctCount">0</span>/<span id="totalCount">0</span></strong> rigtige.</p>
-          <!-- XP-tekst uden bonus-detaljer -->
           <p>Du tjente <strong><span id="xpEarned">0</span> XP</strong>.</p>
 
           <div style="max-width:520px; margin: 0 auto 16px">
@@ -327,7 +326,8 @@
               <div class="bubble" id="petEmojiResult">🐣</div>
               <div>
                 <div class="level-box">Level <span id="levelTextResult">1</span></div>
-                <div class="xpbar"><span id="xpFillResult"></span></div>
+                <div class="tier-line" id="tierLineResult">Egg — Starter som et lille æg</div>
+                <div class="xpbar" style="margin-top:8px;"><span id="xpFillResult"></span></div>
                 <div class="small muted" id="xpLabelResult">0 / 50 XP til næste level</div>
 
                 <!-- Streak bar (resultat) -->
@@ -363,6 +363,27 @@
 
     <script>
       // ===============================
+      // Version & Evolution Table
+      // ===============================
+      const APP_VERSION = 'V1.16.0';
+
+      // Evolution mapping fra din tabel
+      const EVOLUTIONS = [
+        { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣', desc: 'Starter som et lille æg' },
+        { min: 2,  max: 3,  tier: 'Chick',      emoji: '🐥', desc: 'Klækker til kylling' },
+        { min: 4,  max: 6,  tier: 'Small bird', emoji: '🐦', desc: 'Vokser til lille fugl' },
+        { min: 7,  max: 9,  tier: 'Swift',      emoji: '🕊', desc: 'Bliver hurtig og smidig' },
+        { min: 10, max: 12, tier: 'Owl',        emoji: '🦉', desc: 'Klog fugl, milepæl' },
+        { min: 13, max: 15, tier: 'Eagle',      emoji: '🦅', desc: 'Stærk og majestætisk' },
+        { min: 16, max: 19, tier: 'Phoenix',    emoji: '🐦‍🔥', desc: 'Mytisk, brændende fugl' },
+        { min: 20, max: Infinity, tier: 'Dragon', emoji: '🐉', desc: 'Endgame, kæmpe belønning' },
+      ];
+
+      function getEvolutionForLevel(level){
+        return EVOLUTIONS.find(e => level >= e.min && level <= e.max) || EVOLUTIONS[0];
+      }
+
+      // ===============================
       // State & XP Helpers
       // ===============================
       let currentUser = null;
@@ -384,14 +405,6 @@
         return Math.round(100*into/need);
       }
 
-      function petForLevel(level){
-        if(level<=1) return '🐣';
-        if(level<=2) return '🐥';
-        if(level<=4) return '🐦';
-        if(level<=7) return '🦅';
-        return '🐉';
-      }
-
       // Storage + auth
       function loadUser(){
         try{ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : null; }
@@ -406,9 +419,10 @@
         const logoutBtn = document.getElementById('logoutBtn');
         if(currentUser){
           const lvl = getLevel(currentUser.xp || 0);
+          const evo = getEvolutionForLevel(lvl);
           const streak = currentUser.streak || 0;
           const streakTxt = streak>0 ? ` • 🔥${streak}` : '';
-          badge.textContent = `${currentUser.name} • ${currentUser.age} år • Lvl ${lvl}${streakTxt}`;
+          badge.textContent = `${evo.emoji} ${currentUser.name} • ${currentUser.age} år • Lvl ${lvl} • ${evo.tier}${streakTxt}`;
           badge.style.display = '';
           logoutBtn.style.display = '';
         }else{
@@ -433,7 +447,7 @@
         if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
         if (sfw){
           sfw.style.width = progress + '%';
-          sfw.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
+          sfw.classList.toggle('maxed', multiplier >= 2.0);
         }
 
         // Result
@@ -446,7 +460,7 @@
         if (smr) smr.style.display = (multiplier >= 2.0 ? '' : 'none');
         if (sfr){
           sfr.style.width = progress + '%';
-          sfr.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
+          sfr.classList.toggle('maxed', multiplier >= 2.0);
         }
 
         // Quiz top badge
@@ -460,17 +474,20 @@
         const percent = getXPPercent(currentUser.xp || 0);
         const into = getXPIntoLevel(currentUser.xp || 0);
         const need = xpRequiredForLevel(level);
+        const evo = getEvolutionForLevel(level);
 
         // Welcome
         document.getElementById('welcomeName').textContent = currentUser.name;
-        document.getElementById('petEmoji').textContent = petForLevel(level);
+        document.getElementById('petEmoji').textContent = evo.emoji;
         document.getElementById('levelText').textContent = level;
+        document.getElementById('tierLine').textContent = `${evo.tier} — ${evo.desc}`;
         document.getElementById('xpFill').style.width = percent + '%';
         document.getElementById('xpLabel').textContent = `${into} / ${need} XP til næste level`;
 
         // Result
-        document.getElementById('petEmojiResult').textContent = petForLevel(level);
+        document.getElementById('petEmojiResult').textContent = evo.emoji;
         document.getElementById('levelTextResult').textContent = level;
+        document.getElementById('tierLineResult').textContent = `${evo.tier} — ${evo.desc}`;
         document.getElementById('xpFillResult').style.width = percent + '%';
         document.getElementById('xpLabelResult').textContent = `${into} / ${need} XP til næste level`;
 
@@ -500,7 +517,6 @@
           el.offsetHeight;
           el.style.animation = 'pop 800ms ease';
         });
-        // Konfetti kun ved level-up (ikke ved streak)
         launchConfetti(140);
       }
       function launchConfetti(n=120){
@@ -547,7 +563,6 @@
         showSection('quiz');
       }
 
-      // Store, klikbare svar-knapper
       function renderQuestion(){
         const q = QUESTIONS[qIndex];
         document.getElementById('qText').textContent = q.text;
@@ -562,7 +577,6 @@
           btn.textContent = opt;
           btn.addEventListener('click', () => {
             selections[qIndex] = i;
-            // opdater visuel markering
             [...box.querySelectorAll('.answer-btn')].forEach(b=>b.classList.remove('selected'));
             btn.classList.add('selected');
           });
@@ -628,7 +642,7 @@
 
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('totalCount').textContent = QUESTIONS.length;
-        document.getElementById('xpEarned').textContent = earned; // kun XP-tal
+        document.getElementById('xpEarned').textContent = earned;
 
         // Fejloversigt
         const wrongWrap = document.getElementById('wrongAnswers');
@@ -653,7 +667,10 @@
 
         // Level-up effekter (kun naturlig level-up)
         if (levelAfter > levelBefore){
-          showToast(`🎉 Level up! ${levelBefore} → ${levelAfter}`);
+          const evoBefore = getEvolutionForLevel(levelBefore);
+          const evoAfter  = getEvolutionForLevel(levelAfter);
+          const evoMsg = evoBefore.tier !== evoAfter.tier ? ` • Evolved: ${evoBefore.tier} → ${evoAfter.tier} ${evoAfter.emoji}` : '';
+          showToast(`🎉 Level up! ${levelBefore} → ${levelAfter}${evoMsg}`);
           playLevelUpEffects();
         }
 
