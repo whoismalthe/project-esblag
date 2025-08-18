@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.18.2';
+const APP_VERSION = 'V1.18.3';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -149,9 +149,14 @@ function updatePetWidgets(){
   updateStreakBars();
 }
 
+// 🔒 Sektioner er låst før login (kun 'auth' er tilladt)
 function showSection(id){
+  const loggedIn = !!currentUser;
+  const allowed = loggedIn ? ['welcome','auth','quiz','result','about','achievements'] : ['auth'];
+  const target = allowed.includes(id) ? id : 'auth';
   ['welcome','auth','quiz','result','about','achievements'].forEach(sec => {
-    document.getElementById(sec).style.display = (sec === id) ? '' : 'none';
+    const el = document.getElementById(sec);
+    if (el) el.style.display = (sec === target) ? '' : 'none';
   });
 }
 
@@ -211,6 +216,7 @@ let qIndex = 0;
 let selections = [];
 
 function startQuiz(){
+  if (!currentUser) return showSection('auth');
   qIndex = 0;
   selections = new Array(QUESTIONS.length).fill(null);
   renderQuestion();
@@ -289,7 +295,7 @@ function finishQuiz(){
   currentUser.stats.totalAnswered += QUESTIONS.length;
   currentUser.stats.totalCorrect += correct;
   currentUser.stats.quizzesCompleted += 1;
-  currentUser.stats.bestStreak = Math.max(currentUser.stats.bestStreak, correct); // (MVP: bedste i en runde)
+  currentUser.stats.bestStreak = Math.max(currentUser.stats.bestStreak, correct);
   if (perfect) currentUser.stats.perfectRounds += 1;
 
   // Multiplier: x(1 + 0.2 * streak), max 2.0x
@@ -328,9 +334,9 @@ function finishQuiz(){
 
   // Opdater UI-state
   updateHeader();
-  updatePetWidgets(); // inkluderer updateStreakBars()
+  updatePetWidgets();
 
-  // Level-up effekter (kun naturlig level-up)
+  // Level-up effekter
   if (levelAfter > levelBefore){
     const evoBefore = getEvolutionForLevel(levelBefore);
     const evoAfter  = getEvolutionForLevel(levelAfter);
@@ -339,71 +345,23 @@ function finishQuiz(){
     playLevelUpEffects();
   }
 
-  // Achievement check (efter vi har opdateret stats)
+  // Achievement check (efter stats)
   checkAndUnlockAchievements();
 
-  // Vis resultat
   showSection('result');
 }
 
 // ===============================
-// Achievements (MVP)
+// Achievements (MVP) + Queue Popup
 // ===============================
-
-/*
-  Vi starter med nogle generelle badges.
-  Senere kan vi tilføje kategori-badges (fx Pythagoras/Columbus) når vi har temaer.
-*/
 const ACHIEVEMENTS = [
-  {
-    id: 'first_answer',
-    icon: '🎯',
-    title: 'First Step',
-    desc: 'Svar på dit første spørgsmål.',
-    isUnlocked: (u) => (u?.stats?.totalAnswered || 0) >= 1
-  },
-  {
-    id: 'ten_answers',
-    icon: '🧩',
-    title: 'Getting Warm',
-    desc: 'Svar på 10 spørgsmål i alt.',
-    isUnlocked: (u) => (u?.stats?.totalAnswered || 0) >= 10
-  },
-  {
-    id: 'correct_25',
-    icon: '✅',
-    title: 'Sharpshooter',
-    desc: 'Svar rigtigt på 25 spørgsmål i alt.',
-    isUnlocked: (u) => (u?.stats?.totalCorrect || 0) >= 25
-  },
-  {
-    id: 'first_quiz',
-    icon: '🚀',
-    title: 'First Quiz',
-    desc: 'Gennemfør en quiz.',
-    isUnlocked: (u) => (u?.stats?.quizzesCompleted || 0) >= 1
-  },
-  {
-    id: 'perfect_round',
-    icon: '💯',
-    title: 'Perfect!',
-    desc: 'Gennemfør en perfekt runde (alle rigtige).',
-    isUnlocked: (u) => (u?.stats?.perfectRounds || 0) >= 1
-  },
-  {
-    id: 'on_fire',
-    icon: '🔥',
-    title: 'On Fire',
-    desc: 'Opnå en streak på 5 perfekte runder.',
-    isUnlocked: (u) => (u?.streak || 0) >= 5
-  },
-  {
-    id: 'level_5',
-    icon: '🦉',
-    title: 'Level 5',
-    desc: 'Nå level 5.',
-    isUnlocked: (u) => getLevel(u?.xp || 0) >= 5
-  }
+  { id:'first_answer', icon:'🎯', title:'First Step', desc:'Svar på dit første spørgsmål.', isUnlocked:(u)=> (u?.stats?.totalAnswered||0) >= 1 },
+  { id:'ten_answers',  icon:'🧩', title:'Getting Warm', desc:'Svar på 10 spørgsmål i alt.', isUnlocked:(u)=> (u?.stats?.totalAnswered||0) >= 10 },
+  { id:'correct_25',   icon:'✅', title:'Sharpshooter', desc:'Svar rigtigt på 25 spørgsmål i alt.', isUnlocked:(u)=> (u?.stats?.totalCorrect||0) >= 25 },
+  { id:'first_quiz',   icon:'🚀', title:'First Quiz', desc:'Gennemfør en quiz.', isUnlocked:(u)=> (u?.stats?.quizzesCompleted||0) >= 1 },
+  { id:'perfect_round',icon:'💯', title:'Perfect!', desc:'Gennemfør en perfekt runde (alle rigtige).', isUnlocked:(u)=> (u?.stats?.perfectRounds||0) >= 1 },
+  { id:'on_fire',      icon:'🔥', title:'On Fire', desc:'Opnå en streak på 5 perfekte runder.', isUnlocked:(u)=> (u?.streak||0) >= 5 },
+  { id:'level_5',      icon:'🦉', title:'Level 5', desc:'Nå level 5.', isUnlocked:(u)=> getLevel(u?.xp||0) >= 5 },
 ];
 
 function getAchState(){
@@ -428,21 +386,8 @@ function checkAndUnlockAchievements(){
   if (newly.length){
     saveUser();
     renderAchievements(); // refresh list
-    newly.forEach(a => showAchPopup(a));
+    newly.forEach(a => queueAchPopup(a)); // <- queue i stedet for direkte show
   }
-}
-
-function showAchPopup(a){
-  const el = document.getElementById('achPopup');
-  el.innerHTML = `
-    <div class="badge-ico" aria-hidden="true">${a.icon}</div>
-    <div>
-      <div class="badge-title">Unlocked: ${a.title}</div>
-      <div class="small muted">${a.desc}</div>
-    </div>
-  `;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
 }
 
 function renderAchievements(){
@@ -467,10 +412,57 @@ function renderAchievements(){
   }).join('');
 }
 
+// ----- Popup Queue -----
+const achQueue = [];
+let achShowing = false;
+
+function queueAchPopup(a){
+  achQueue.push(a);
+  if (!achShowing) processAchQueue();
+}
+
+function processAchQueue(){
+  if (!achQueue.length) { achShowing = false; return; }
+  achShowing = true;
+  const a = achQueue.shift();
+  showAchPopup(a).then(() => {
+    // lille pause mellem popups
+    setTimeout(processAchQueue, 180);
+  });
+}
+
+// Viser én popup, returnerer Promise der resolves når den er færdig (vis + hide)
+function showAchPopup(a){
+  return new Promise((resolve) => {
+    const el = document.getElementById('achPopup');
+    el.innerHTML = `
+      <div class="badge-ico" aria-hidden="true">${a.icon}</div>
+      <div>
+        <div class="badge-title">Unlocked: ${a.title}</div>
+        <div class="small muted">${a.desc}</div>
+      </div>
+    `;
+    // show
+    el.classList.remove('hide');
+    el.classList.add('show');
+    // hold synlig lidt tid
+    const visibleMs = 2000;
+    const transitionMs = 250;
+
+    setTimeout(() => {
+      // hide
+      el.classList.remove('show');
+      el.classList.add('hide');
+      setTimeout(() => resolve(), transitionMs);
+    }, visibleMs);
+  });
+}
+
 // ===============================
 // Events & Init
 // ===============================
 document.getElementById('logoutBtn')?.addEventListener('click', logout);
+
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
 authForm?.addEventListener('submit', (e) => {
@@ -490,7 +482,11 @@ authForm?.addEventListener('submit', (e) => {
   }
   authError.style.display = 'none';
 
-  currentUser = { name, age, xp: 0, streak: 0, stats: { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 }, achievements: { unlocked: {} } };
+  currentUser = {
+    name, age, xp: 0, streak: 0,
+    stats: { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 },
+    achievements: { unlocked: {} }
+  };
   saveUser();
   updateHeader();
   updatePetWidgets();
@@ -507,13 +503,8 @@ document.getElementById('homeBtn')?.addEventListener('click', () => showSection(
 document.getElementById('retryBtn')?.addEventListener('click', startQuiz);
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
-// 🔧 NÆSTE-KNAP: kun click (undgår double-advance fra pointerdown+click)
-const nextBtn = document.getElementById('nextBtn');
-if (nextBtn) {
-  const goNext = (e) => { e.preventDefault(); nextQuestion(); };
-  nextBtn.addEventListener('click', goNext);
-}
-
+// Næste-knap – kun click (undgår dobbelt)
+document.getElementById('nextBtn')?.addEventListener('click', (e) => { e.preventDefault(); nextQuestion(); });
 
 // Dark mode toggle
 document.getElementById('darkModeToggle')?.addEventListener('click', () => {
@@ -521,10 +512,16 @@ document.getElementById('darkModeToggle')?.addEventListener('click', () => {
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
-// Nav
-document.getElementById('navHomeBtn')?.addEventListener('click', () => showSection('welcome'));
-document.getElementById('navAchBtn')?.addEventListener('click', () => { renderAchievements(); showSection('achievements'); });
-document.getElementById('backFromAch')?.addEventListener('click', () => showSection('welcome'));
+// Nav (Achievements låst før login)
+document.getElementById('navAchBtn')?.addEventListener('click', () => {
+  if (!currentUser){
+    showToast('Log ind først for at se achievements.');
+    showSection('auth');
+    return;
+  }
+  renderAchievements();
+  showSection('achievements');
+});
 
 // App Init
 (function init(){
