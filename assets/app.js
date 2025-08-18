@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.18.1';
+const APP_VERSION = 'V1.18.2';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -507,13 +507,13 @@ document.getElementById('homeBtn')?.addEventListener('click', () => showSection(
 document.getElementById('retryBtn')?.addEventListener('click', startQuiz);
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
-// 🔧 NÆSTE-KNAP: instant pointer + click fallback
+// 🔧 NÆSTE-KNAP: kun click (undgår double-advance fra pointerdown+click)
 const nextBtn = document.getElementById('nextBtn');
 if (nextBtn) {
   const goNext = (e) => { e.preventDefault(); nextQuestion(); };
-  nextBtn.addEventListener('pointerdown', goNext);
   nextBtn.addEventListener('click', goNext);
 }
+
 
 // Dark mode toggle
 document.getElementById('darkModeToggle')?.addEventListener('click', () => {
