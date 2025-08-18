@@ -173,11 +173,22 @@ main{ padding:32px 16px; }
 }
 .answer-btn:hover{ transform: translateY(-1px); background:color-mix(in oklab, var(--soft) 85%, #fff 15%); }
 :root[data-theme="dark"] .answer-btn:hover{ background:color-mix(in oklab, var(--soft) 75%, #1b2338 25%); }
-.answer-btn.selected{
-  border-color: var(--brand);
-  background: var(--brand);
-  color: white;
+/* VALGT SVAR – hold den blå uanset hover/focus/active */
+.answer-btn.selected,
+.answer-btn.selected:hover,
+.answer-btn.selected:focus,
+.answer-btn.selected:active {
+  background: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: #fff !important;
 }
+/* Fokus-ring uden at ændre baggrundsfarve */
+.answer-btn:focus { outline: none; }
+.answer-btn:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--brand) 80%, white);
+  outline-offset: 2px;
+}
+
 
 /* ========= MISC ========= */
 .muted{ color:var(--muted) }
