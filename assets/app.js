@@ -1,16 +1,16 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.16.0';
+const APP_VERSION = 'V1.16.1';
 
-// Evolution mapping
+// Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
-  { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣', desc: 'Starter som et lille æg' },
-  { min: 2,  max: 3,  tier: 'Chick',      emoji: '🐥', desc: 'Klækker til kylling' },
-  { min: 4,  max: 6,  tier: 'Small bird', emoji: '🐦', desc: 'Vokser til lille fugl' },
-  { min: 7,  max: 9,  tier: 'Swift',      emoji: '🕊', desc: 'Bliver hurtig og smidig' },
-  { min: 10, max: 12, tier: 'Owl',        emoji: '🦉', desc: 'Klog fugl, milepæl' },
-  { min: 13, max: 15, tier: 'Eagle',      emoji: '🦅', desc: 'Stærk og majestætisk' },
+  { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣',   desc: 'Starter som et lille æg' },
+  { min: 2,  max: 3,  tier: 'Chick',      emoji: '🐥',   desc: 'Klækker til kylling' },
+  { min: 4,  max: 6,  tier: 'Small bird', emoji: '🐦',   desc: 'Vokser til lille fugl' },
+  { min: 7,  max: 9,  tier: 'Swift',      emoji: '🕊',   desc: 'Bliver hurtig og smidig' },
+  { min: 10, max: 12, tier: 'Owl',        emoji: '🦉',   desc: 'Klog fugl, milepæl' },
+  { min: 13, max: 15, tier: 'Eagle',      emoji: '🦅',   desc: 'Stærk og majestætisk' },
   { min: 16, max: 19, tier: 'Phoenix',    emoji: '🐦‍🔥', desc: 'Mytisk, brændende fugl' },
   { min: 20, max: Infinity, tier: 'Dragon', emoji: '🐉', desc: 'Endgame, kæmpe belønning' },
 ];
@@ -24,9 +24,9 @@ function getEvolutionForLevel(level){
 let currentUser = null;
 
 const STORAGE_KEY = 'esblag_user_v1';
-const XP_PER_CORRECT = 10;               // +10 XP pr. korrekt svar
-const STREAK_STEP = 0.2;                 // +20% XP pr. streak-niveau
-the STREAK_MAX_FOR_2X = 5;             // 5 perfekte runder giver 2.0x
+const XP_PER_CORRECT = 10;   // +10 XP pr. korrekt svar
+const STREAK_STEP = 0.2;     // +20% XP pr. streak-niveau
+const STREAK_MAX_FOR_2X = 5; // 5 perfekte runder giver 2.0x
 
 // Progressive XP-kurve: 1→2: 50, 2→3: 70, 3→4: 90, ...
 function xpRequiredForLevel(level){ return 50 + Math.max(0,(level-1))*20; }
@@ -82,7 +82,7 @@ function updateStreakBars(){
   if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
   if (sfw){
     sfw.style.width = progress + '%';
-    sfw.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
+    sfw.classList.toggle('maxed', multiplier >= 2.0); // shimmer når max
   }
 
   // Result
@@ -95,7 +95,7 @@ function updateStreakBars(){
   if (smr) smr.style.display = (multiplier >= 2.0 ? '' : 'none');
   if (sfr){
     sfr.style.width = progress + '%';
-    sfr.classList.toggle('maxed', multiplier >= 2.0); // pulser/shimmer når max
+    sfr.classList.toggle('maxed', multiplier >= 2.0);
   }
 
   // Quiz top badge
@@ -152,7 +152,6 @@ function playLevelUpEffects(){
     el.offsetHeight;
     el.style.animation = 'pop 800ms ease';
   });
-  // Konfetti kun ved level-up (ikke ved streak)
   launchConfetti(140);
 }
 function launchConfetti(n=120){
@@ -174,7 +173,7 @@ function launchConfetti(n=120){
 }
 
 // ===============================
-// Quiz Engine
+// Quiz Engine (MVP)
 // ===============================
 const QUESTIONS = [
   { text: 'Hvad er 7 + 5?', options: ['10','12','13','14'], correctIndex: 1 },
