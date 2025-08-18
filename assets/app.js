@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.18.0';
+const APP_VERSION = 'V1.18.1';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -470,7 +470,7 @@ function renderAchievements(){
 // ===============================
 // Events & Init
 // ===============================
-document.getElementById('logoutBtn').addEventListener('click', logout);
+document.getElementById('logoutBtn')?.addEventListener('click', logout);
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
 authForm?.addEventListener('submit', (e) => {
@@ -506,6 +506,14 @@ document.getElementById('backHomeBtn')?.addEventListener('click', () => showSect
 document.getElementById('homeBtn')?.addEventListener('click', () => showSection('welcome'));
 document.getElementById('retryBtn')?.addEventListener('click', startQuiz);
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
+
+// 🔧 NÆSTE-KNAP: instant pointer + click fallback
+const nextBtn = document.getElementById('nextBtn');
+if (nextBtn) {
+  const goNext = (e) => { e.preventDefault(); nextQuestion(); };
+  nextBtn.addEventListener('pointerdown', goNext);
+  nextBtn.addEventListener('click', goNext);
+}
 
 // Dark mode toggle
 document.getElementById('darkModeToggle')?.addEventListener('click', () => {
