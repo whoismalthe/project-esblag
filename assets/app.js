@@ -236,12 +236,25 @@ function renderQuestion(){
     btn.type = 'button';
     btn.className = 'answer-btn' + (selections[qIndex]===i ? ' selected' : '');
     btn.textContent = opt;
-    btn.addEventListener('click', () => {
-      selections[qIndex] = i;
-      // opdater visuel markering
-      [...box.querySelectorAll('.answer-btn')].forEach(b=>b.classList.remove('selected'));
-      btn.classList.add('selected');
-    });
+   const select = () => {
+  selections[qIndex] = i;
+  // opdater visuel markering
+  [...box.querySelectorAll('.answer-btn')].forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+};
+
+// Vælg så snart man trykker (hurtig feedback i dark mode og på touch)
+btn.addEventListener('pointerdown', (e) => {
+  e.preventDefault(); // undgå fokus-hop på mobil
+  select();
+});
+
+// Behold click for tastatur/fallback
+btn.addEventListener('click', (e) => {
+  e.preventDefault();
+  select();
+});
+
     box.appendChild(btn);
   });
 
