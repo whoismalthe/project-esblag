@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Project ESBLAG — MVP V1.18.1</title>
+    <title>Project ESBLAG — MVP V1.18.3</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-<link rel="stylesheet" href="assets/styles.css?v=1.18.2">
+    <link rel="stylesheet" href="assets/styles.css?v=1.18.3">
   </head>
   <body>
     <header>
@@ -20,20 +20,19 @@
           <div class="logo">ES</div>
           <div>
             Project ESBLAG
-            <div class="small muted">Education Should Be Like A Game • V1.18.0</div>
+            <div class="small muted">Education Should Be Like A Game • V1.18.3</div>
           </div>
         </div>
         <div class="spacer"></div>
 
         <!-- Dark mode toggle -->
-        <button id="darkModeToggle" class="ghost" aria-label="Skift tema">🌙 Dark</button>
+        <button id="darkModeToggle" class="ghost" aria-label="Skift tema" type="button">🌙 Dark</button>
 
-        <!-- Nav -->
-        <button id="navHomeBtn" class="ghost">🏠 Hjem</button>
-        <button id="navAchBtn" class="ghost">🏆 Achievements</button>
+        <!-- Kun Achievements i nav -->
+        <button id="navAchBtn" class="ghost" type="button">🏆 Achievements</button>
 
         <div id="userBadge" class="pill" style="display:none"></div>
-        <button id="logoutBtn" class="ghost" style="display:none">Log ud</button>
+        <button id="logoutBtn" class="ghost" style="display:none" type="button">Log ud</button>
       </div>
     </header>
 
@@ -67,8 +66,8 @@
             </div>
 
             <div class="row" style="margin-top:12px">
-              <button id="startQuizBtn">Start quiz</button>
-              <button class="secondary" id="aboutBtn">Hvad er dette?</button>
+              <button id="startQuizBtn" type="button">Start quiz</button>
+              <button class="secondary" id="aboutBtn" type="button">Hvad er dette?</button>
             </div>
             <div class="small muted">PS: Denne prototype gemmer kun på din egen enhed.</div>
           </div>
@@ -91,7 +90,7 @@
         <div class="card">
           <h2>Hvad er Project ESBLAG?</h2>
           <p>En enkel MVP, der viser hvordan gamification kan gøre læring sjovere: XP, levels og et lille kæledyr, der udvikler sig.</p>
-          <button class="secondary" id="backHomeBtn">Tilbage</button>
+          <button class="secondary" id="backHomeBtn" type="button">Tilbage</button>
         </div>
       </section>
 
@@ -130,8 +129,7 @@
             <div id="qOptions" class="options"></div>
             <div class="row">
               <button id="nextBtn" type="button">Næste</button>
-<button id="cancelQuizBtn" class="ghost" type="button">Afbryd</button>
-
+              <button id="cancelQuizBtn" class="ghost" type="button">Afbryd</button>
             </div>
           </div>
         </div>
@@ -174,8 +172,8 @@
           </div>
 
           <div class="row" style="justify-content:center; gap:10px">
-            <button id="retryBtn">Prøv quizzen igen</button>
-            <button class="secondary" id="homeBtn">Til velkomst</button>
+            <button id="retryBtn" type="button">Prøv quizzen igen</button>
+            <button class="secondary" id="homeBtn" type="button">Til velkomst</button>
           </div>
         </div>
       </section>
@@ -187,7 +185,7 @@
           <p class="muted small">Lås badges op ved at spille! Du kan se kravene under hvert badge.</p>
           <div id="achGrid" class="ach-grid"></div>
           <div class="row" style="margin-top:14px">
-            <button class="secondary" id="backFromAch">Tilbage</button>
+            <button class="secondary" id="backFromAch" type="button">Tilbage</button>
           </div>
         </div>
       </section>
@@ -198,6 +196,6 @@
     <div id="achPopup" class="ach-popup" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- JS -->
-<script src="assets/app.js?v=1.18.2" defer></script>
+    <script src="assets/app.js?v=1.18.3" defer></script>
   </body>
 </html>
