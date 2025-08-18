@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Project ESBLAG — MVP V1.17.1</title>
+    <title>Project ESBLAG — MVP V1.18.0</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.17.1">
+    <link rel="stylesheet" href="assets/styles.css?v=1.18.0">
   </head>
   <body>
     <header>
@@ -20,13 +20,17 @@
           <div class="logo">ES</div>
           <div>
             Project ESBLAG
-            <div class="small muted">Education Should Be Like A Game • V1.17.1</div>
+            <div class="small muted">Education Should Be Like A Game • V1.18.0</div>
           </div>
         </div>
         <div class="spacer"></div>
 
         <!-- Dark mode toggle -->
         <button id="darkModeToggle" class="ghost" aria-label="Skift tema">🌙 Dark</button>
+
+        <!-- Nav -->
+        <button id="navHomeBtn" class="ghost">🏠 Hjem</button>
+        <button id="navAchBtn" class="ghost">🏆 Achievements</button>
 
         <div id="userBadge" class="pill" style="display:none"></div>
         <button id="logoutBtn" class="ghost" style="display:none">Log ud</button>
@@ -174,11 +178,25 @@
           </div>
         </div>
       </section>
+
+      <!-- Achievements -->
+      <section id="achievements" style="display:none">
+        <div class="card">
+          <h2 style="margin-top:0">🏆 Achievements</h2>
+          <p class="muted small">Lås badges op ved at spille! Du kan se kravene under hvert badge.</p>
+          <div id="achGrid" class="ach-grid"></div>
+          <div class="row" style="margin-top:14px">
+            <button class="secondary" id="backFromAch">Tilbage</button>
+          </div>
+        </div>
+      </section>
     </main>
 
+    <!-- Toast & Achievement popup -->
     <div id="toast" class="toast" aria-live="polite"></div>
+    <div id="achPopup" class="ach-popup" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- JS -->
-    <script src="assets/app.js?v=1.17.1" defer></script>
+    <script src="assets/app.js?v=1.18.0" defer></script>
   </body>
 </html>
