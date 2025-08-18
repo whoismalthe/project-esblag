@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.17.0';
+const APP_VERSION = 'V1.18.0';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -25,26 +25,18 @@ const THEME_KEY = 'esblag_theme';
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('darkModeToggle');
-  if (btn){
-    if(theme === 'dark'){ btn.textContent = '☀️ Light'; }
-    else { btn.textContent = '🌙 Dark'; }
-  }
+  if (btn){ btn.textContent = (theme === 'dark') ? '☀️ Light' : '🌙 Dark'; }
   try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
 }
 function initTheme(){
-  // 1) Bruger-valg
   const saved = localStorage.getItem(THEME_KEY);
-  if (saved === 'dark' || saved === 'light'){
-    applyTheme(saved);
-    return;
-  }
-  // 2) System-præference
+  if (saved === 'dark' || saved === 'light'){ applyTheme(saved); return; }
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(prefersDark ? 'dark' : 'light');
 }
 
 // ===============================
-// State & XP Helpers
+// State, Stats & XP Helpers
 // ===============================
 let currentUser = null;
 
@@ -73,7 +65,9 @@ function loadUser(){
 function saveUser(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser)); }
 function logout(){ localStorage.removeItem(STORAGE_KEY); currentUser=null; showSection('auth'); updateHeader(); }
 
+// ===============================
 // UI helpers
+// ===============================
 function updateHeader(){
   const badge = document.getElementById('userBadge');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -156,7 +150,7 @@ function updatePetWidgets(){
 }
 
 function showSection(id){
-  ['welcome','auth','quiz','result','about'].forEach(sec => {
+  ['welcome','auth','quiz','result','about','achievements'].forEach(sec => {
     document.getElementById(sec).style.display = (sec === id) ? '' : 'none';
   });
 }
@@ -223,7 +217,7 @@ function startQuiz(){
   showSection('quiz');
 }
 
-// Store, klikbare svar-knapper
+// Store, klikbare svar-knapper (med instant select)
 function renderQuestion(){
   const q = QUESTIONS[qIndex];
   document.getElementById('qText').textContent = q.text;
@@ -236,24 +230,15 @@ function renderQuestion(){
     btn.type = 'button';
     btn.className = 'answer-btn' + (selections[qIndex]===i ? ' selected' : '');
     btn.textContent = opt;
-   const select = () => {
-  selections[qIndex] = i;
-  // opdater visuel markering
-  [...box.querySelectorAll('.answer-btn')].forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-};
 
-// Vælg så snart man trykker (hurtig feedback i dark mode og på touch)
-btn.addEventListener('pointerdown', (e) => {
-  e.preventDefault(); // undgå fokus-hop på mobil
-  select();
-});
+    const select = () => {
+      selections[qIndex] = i;
+      [...box.querySelectorAll('.answer-btn')].forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
 
-// Behold click for tastatur/fallback
-btn.addEventListener('click', (e) => {
-  e.preventDefault();
-  select();
-});
+    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); select(); });
+    btn.addEventListener('click', (e) => { e.preventDefault(); select(); });
 
     box.appendChild(btn);
   });
@@ -292,15 +277,20 @@ function finishQuiz(){
   // Basis- XP for rigtige svar
   const baseXP = correct * XP_PER_CORRECT;
 
-  // Streak-regler
+  // Streak-regler (perfekte runder)
   let streak = currentUser.streak || 0;
   const perfect = (correct === QUESTIONS.length);
-  if (perfect){
-    streak = streak + 1;           // +1 streak
-  } else {
-    streak = 0;                    // reset streak
-  }
+  if (perfect) streak = streak + 1;
+  else streak = 0;
   currentUser.streak = streak;
+
+  // Stats til achievements
+  currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
+  currentUser.stats.totalAnswered += QUESTIONS.length;
+  currentUser.stats.totalCorrect += correct;
+  currentUser.stats.quizzesCompleted += 1;
+  currentUser.stats.bestStreak = Math.max(currentUser.stats.bestStreak, correct); // (MVP: bedste i en runde)
+  if (perfect) currentUser.stats.perfectRounds += 1;
 
   // Multiplier: x(1 + 0.2 * streak), max 2.0x
   const multiplier = Math.min(1 + STREAK_STEP * streak, 2.0);
@@ -317,7 +307,7 @@ function finishQuiz(){
 
   document.getElementById('correctCount').textContent = correct;
   document.getElementById('totalCount').textContent = QUESTIONS.length;
-  document.getElementById('xpEarned').textContent = earned; // kun XP-tal
+  document.getElementById('xpEarned').textContent = earned;
 
   // Fejloversigt
   const wrongWrap = document.getElementById('wrongAnswers');
@@ -349,14 +339,141 @@ function finishQuiz(){
     playLevelUpEffects();
   }
 
+  // Achievement check (efter vi har opdateret stats)
+  checkAndUnlockAchievements();
+
+  // Vis resultat
   showSection('result');
 }
 
-// Events
+// ===============================
+// Achievements (MVP)
+// ===============================
+
+/*
+  Vi starter med nogle generelle badges.
+  Senere kan vi tilføje kategori-badges (fx Pythagoras/Columbus) når vi har temaer.
+*/
+const ACHIEVEMENTS = [
+  {
+    id: 'first_answer',
+    icon: '🎯',
+    title: 'First Step',
+    desc: 'Svar på dit første spørgsmål.',
+    isUnlocked: (u) => (u?.stats?.totalAnswered || 0) >= 1
+  },
+  {
+    id: 'ten_answers',
+    icon: '🧩',
+    title: 'Getting Warm',
+    desc: 'Svar på 10 spørgsmål i alt.',
+    isUnlocked: (u) => (u?.stats?.totalAnswered || 0) >= 10
+  },
+  {
+    id: 'correct_25',
+    icon: '✅',
+    title: 'Sharpshooter',
+    desc: 'Svar rigtigt på 25 spørgsmål i alt.',
+    isUnlocked: (u) => (u?.stats?.totalCorrect || 0) >= 25
+  },
+  {
+    id: 'first_quiz',
+    icon: '🚀',
+    title: 'First Quiz',
+    desc: 'Gennemfør en quiz.',
+    isUnlocked: (u) => (u?.stats?.quizzesCompleted || 0) >= 1
+  },
+  {
+    id: 'perfect_round',
+    icon: '💯',
+    title: 'Perfect!',
+    desc: 'Gennemfør en perfekt runde (alle rigtige).',
+    isUnlocked: (u) => (u?.stats?.perfectRounds || 0) >= 1
+  },
+  {
+    id: 'on_fire',
+    icon: '🔥',
+    title: 'On Fire',
+    desc: 'Opnå en streak på 5 perfekte runder.',
+    isUnlocked: (u) => (u?.streak || 0) >= 5
+  },
+  {
+    id: 'level_5',
+    icon: '🦉',
+    title: 'Level 5',
+    desc: 'Nå level 5.',
+    isUnlocked: (u) => getLevel(u?.xp || 0) >= 5
+  }
+];
+
+function getAchState(){
+  if (!currentUser) return { unlocked: {} };
+  currentUser.achievements = currentUser.achievements || { unlocked: {} };
+  return currentUser.achievements;
+}
+
+function checkAndUnlockAchievements(){
+  const state = getAchState();
+  const newly = [];
+
+  ACHIEVEMENTS.forEach(a => {
+    const already = !!state.unlocked[a.id];
+    const ok = a.isUnlocked(currentUser);
+    if (ok && !already){
+      state.unlocked[a.id] = { at: Date.now() };
+      newly.push(a);
+    }
+  });
+
+  if (newly.length){
+    saveUser();
+    renderAchievements(); // refresh list
+    newly.forEach(a => showAchPopup(a));
+  }
+}
+
+function showAchPopup(a){
+  const el = document.getElementById('achPopup');
+  el.innerHTML = `
+    <div class="badge-ico" aria-hidden="true">${a.icon}</div>
+    <div>
+      <div class="badge-title">Unlocked: ${a.title}</div>
+      <div class="small muted">${a.desc}</div>
+    </div>
+  `;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function renderAchievements(){
+  const grid = document.getElementById('achGrid');
+  if (!grid) return;
+  const state = getAchState();
+
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = !!state.unlocked[a.id];
+    const cls = 'badge-card' + (unlocked ? '' : ' badge-locked');
+    const label = unlocked ? 'Unlocked' : 'Locked';
+    return `
+      <div class="${cls}">
+        <div class="badge-ico">${a.icon}</div>
+        <div class="badge-meta">
+          <div class="badge-title">${a.title}</div>
+          <div class="badge-desc">${a.desc}</div>
+          <div class="badge-state ${unlocked ? 'unlocked' : 'locked'}">${label}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===============================
+// Events & Init
+// ===============================
 document.getElementById('logoutBtn').addEventListener('click', logout);
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
-authForm.addEventListener('submit', (e) => {
+authForm?.addEventListener('submit', (e) => {
   e.preventDefault();
   const name = authForm.name.value.trim();
   const age = parseInt(authForm.age.value, 10);
@@ -373,43 +490,50 @@ authForm.addEventListener('submit', (e) => {
   }
   authError.style.display = 'none';
 
-  currentUser = { name, age, xp: 0, streak: 0 };
+  currentUser = { name, age, xp: 0, streak: 0, stats: { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 }, achievements: { unlocked: {} } };
   saveUser();
   updateHeader();
   updatePetWidgets();
+  renderAchievements();
   showSection('welcome');
 });
-document.getElementById('authReset').addEventListener('click', () => {
-  authError.style.display = 'none';
-});
 
-document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
-document.getElementById('aboutBtn').addEventListener('click', () => showSection('about'));
-document.getElementById('backHomeBtn').addEventListener('click', () => showSection('welcome'));
+document.getElementById('authReset')?.addEventListener('click', () => { if (authError) authError.style.display = 'none'; });
 
-document.getElementById('nextBtn').addEventListener('click', nextQuestion);
-document.getElementById('cancelQuizBtn').addEventListener('click', () => showSection('welcome'));
-
-document.getElementById('retryBtn').addEventListener('click', startQuiz);
-document.getElementById('homeBtn').addEventListener('click', () => showSection('welcome'));
+document.getElementById('startQuizBtn')?.addEventListener('click', startQuiz);
+document.getElementById('aboutBtn')?.addEventListener('click', () => showSection('about'));
+document.getElementById('backHomeBtn')?.addEventListener('click', () => showSection('welcome'));
+document.getElementById('homeBtn')?.addEventListener('click', () => showSection('welcome'));
+document.getElementById('retryBtn')?.addEventListener('click', startQuiz);
+document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
 // Dark mode toggle
-document.getElementById('darkModeToggle').addEventListener('click', () => {
+document.getElementById('darkModeToggle')?.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
+// Nav
+document.getElementById('navHomeBtn')?.addEventListener('click', () => showSection('welcome'));
+document.getElementById('navAchBtn')?.addEventListener('click', () => { renderAchievements(); showSection('achievements'); });
+document.getElementById('backFromAch')?.addEventListener('click', () => showSection('welcome'));
+
 // App Init
 (function init(){
-  initTheme(); // <- vælg og anvend tema ved load
+  initTheme();
 
   const existing = loadUser();
   if(existing){
     currentUser = existing;
+    // migration defaults
     if (typeof currentUser.xp !== 'number') currentUser.xp = 0;
     if (typeof currentUser.streak !== 'number') currentUser.streak = 0;
+    currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
+    currentUser.achievements = currentUser.achievements || { unlocked: {} };
+
     updateHeader();
     updatePetWidgets();
+    renderAchievements();
     showSection('welcome');
   }else{
     showSection('auth');
