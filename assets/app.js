@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.18.3';
+const APP_VERSION = 'V1.18.4';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -148,17 +148,26 @@ function updatePetWidgets(){
   // Streak bars
   updateStreakBars();
 }
+let lastSection = 'welcome';
 
 // 🔒 Sektioner er låst før login (kun 'auth' er tilladt)
 function showSection(id){
   const loggedIn = !!currentUser;
-  const allowed = loggedIn ? ['welcome','auth','quiz','result','about','achievements'] : ['auth'];
+  const all = ['welcome','auth','quiz','result','about','achievements'];
+  const allowed = loggedIn ? all : ['auth'];
   const target = allowed.includes(id) ? id : 'auth';
-  ['welcome','auth','quiz','result','about','achievements'].forEach(sec => {
+
+  all.forEach(sec => {
     const el = document.getElementById(sec);
     if (el) el.style.display = (sec === target) ? '' : 'none';
   });
+
+  // Husk hvor vi kom fra (men ikke når vi står på achievements)
+  if (target !== 'achievements') {
+    lastSection = target;
+  }
 }
+
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -522,6 +531,9 @@ document.getElementById('navAchBtn')?.addEventListener('click', () => {
   renderAchievements();
   showSection('achievements');
 });
+
+// Achievements: tilbage = hop tilbage til hvor vi kom fra
+document.getElementById('backFromAch')?.addEventListener('click', () => { showSection(lastSection); });
 
 // App Init
 (function init(){
