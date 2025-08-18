@@ -307,3 +307,8 @@ main{ padding:32px 16px; }
 .ach-popup.hide{
   opacity: 0; transform: translateY(-8px);
 }
+@media (max-width: 600px) {
+  .logo {
+    display: none;
+  }
+}
