@@ -58,6 +58,63 @@ header{
   backdrop-filter: blur(6px);
   border-bottom:1px solid var(--border);
 }
+/* ===== HEADER FLEX ===== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Venstre side (logo + titel) */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.header-left small {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Højre side (userinfo + knapper) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+
+/* Mobil-version */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .header-right {
+    flex-wrap: wrap;   /* tillader knapper at hoppe ned */
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .user-info {
+    flex-basis: 100%;  /* brugerinfo får egen linje */
+  }
+}
+
 .wrap{max-width:1000px; margin:0 auto; padding:16px;}
 .row{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
 .brand{
