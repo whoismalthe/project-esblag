@@ -1,5 +1,4 @@
 /* ========= THEME TOKENS ========= */
-
 :root{
   /* Light */
   --bg: #fbfbff;
@@ -14,16 +13,15 @@
   --shadow: 0 10px 30px rgba(22, 33, 62, 0.08);
   --radius: 16px;
 
-  --streak-bg: #ffe8cc;        /* lys orange baggrund */
-  --streak-fill: #ff9900;      /* orange fyld */
-  --streak-border: #ffd199;    /* lys kant */
+  --streak-bg: #ffe8cc;
+  --streak-fill: #ff9900;
+  --streak-border: #ffd199;
 
   --border: rgba(0,0,0,.05);
   --soft: #f1f5f9;
   --soft-2: #eef2ff;
 }
 :root[data-theme="dark"]{
-  /* Dark overrides */
   --bg: #0b1020;
   --ink: #e5e7eb;
   --muted: #9aa3b2;
@@ -211,7 +209,7 @@ main{ padding:32px 16px; }
 .streak-icon:hover{ animation: hop 600ms ease; }
 @keyframes hop{ 0%{transform:translateY(0)} 30%{transform:translateY(-6px)} 60%{transform:translateY(0)} 80%{transform:translateY(-3px)} 100%{transform:translateY(0)} }
 
-/* ========= ACHIEVEMENTS ========= */
+/* ========= ACHIEVEMENTS GRID ========= */
 .ach-grid{
   display:grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -234,13 +232,21 @@ main{ padding:32px 16px; }
 .badge-state.locked{ color:#64748b }
 .badge-state.unlocked{ color:#0f766e }
 
-/* Unlock popup (hjørne) */
+/* ========= ACHIEVEMENT POPUP (smooth queue) ========= */
 .ach-popup{
   position: fixed; right: 16px; top: 16px; z-index: 9999;
-  display: none; gap:10px; align-items:center;
+  display: flex; gap:10px; align-items:center;
   background: var(--card); color: var(--ink);
   border:1px solid var(--border); border-radius:14px; padding:10px 12px;
   box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
 }
-.ach-popup.show{ display:flex; animation: slideIn .25s ease }
-@keyframes slideIn{ from{ transform: translateY(-10px); opacity: 0 } to{ transform: translateY(0); opacity:1 } }
+.ach-popup .badge-ico{ width:40px; height:40px; font-size:22px; border-radius:10px; }
+.ach-popup.show{
+  opacity: 1; transform: translateY(0);
+}
+.ach-popup.hide{
+  opacity: 0; transform: translateY(-8px);
+}
