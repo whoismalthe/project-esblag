@@ -11,30 +11,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.18.4">
+    <link rel="stylesheet" href="assets/styles.css?v=1.18.5">
   </head>
   <body>
     <header>
-      <div class="wrap row">
-        <div class="brand">
-          <div class="logo">ES</div>
-          <div>
-            Project ESBLAG
-            <div class="small muted">Education Should Be Like A Game • V1.18.4</div>
-          </div>
-        </div>
-        <div class="spacer"></div>
-
-        <!-- Dark mode toggle -->
-        <button id="darkModeToggle" class="ghost" aria-label="Skift tema" type="button">🌙 Dark</button>
-
-        <!-- Kun Achievements i nav -->
-        <button id="navAchBtn" class="ghost" type="button">🏆 Achievements</button>
-
-        <div id="userBadge" class="pill" style="display:none"></div>
-        <button id="logoutBtn" class="ghost" style="display:none" type="button">Log ud</button>
+  <div class="header-left">
+    <div class="brand">
+      <div class="logo">ES</div>
+      <div>
+        Project ESBLAG
+        <div class="small muted">Education Should Be Like A Game • V1.18.4</div>
       </div>
-    </header>
+    </div>
+    <div id="userBadge" class="pill" style="display:none"></div>
+  </div>
+
+  <div class="header-right">
+    <!-- Dark mode toggle -->
+    <button id="darkModeToggle" class="ghost" aria-label="Skift tema" type="button">🌙 Dark</button>
+
+    <!-- Kun Achievements i nav -->
+    <button id="navAchBtn" class="ghost" type="button">🏆 Achievements</button>
+
+    <button id="logoutBtn" class="ghost" style="display:none" type="button">Log ud</button>
+  </div>
+</header>
+
 
     <main class="wrap">
       <!-- SECTION: Welcome -->
