@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.16.1';
+const APP_VERSION = 'V1.17.0';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -16,6 +16,31 @@ const EVOLUTIONS = [
 ];
 function getEvolutionForLevel(level){
   return EVOLUTIONS.find(e => level >= e.min && level <= e.max) || EVOLUTIONS[0];
+}
+
+// ===============================
+// Theme (Dark/Light)
+// ===============================
+const THEME_KEY = 'esblag_theme';
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('darkModeToggle');
+  if (btn){
+    if(theme === 'dark'){ btn.textContent = '☀️ Light'; }
+    else { btn.textContent = '🌙 Dark'; }
+  }
+  try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+}
+function initTheme(){
+  // 1) Bruger-valg
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'dark' || saved === 'light'){
+    applyTheme(saved);
+    return;
+  }
+  // 2) System-præference
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(prefersDark ? 'dark' : 'light');
 }
 
 // ===============================
@@ -82,7 +107,7 @@ function updateStreakBars(){
   if (smw) smw.style.display = (multiplier >= 2.0 ? '' : 'none');
   if (sfw){
     sfw.style.width = progress + '%';
-    sfw.classList.toggle('maxed', multiplier >= 2.0); // shimmer når max
+    sfw.classList.toggle('maxed', multiplier >= 2.0);
   }
 
   // Result
@@ -355,8 +380,16 @@ document.getElementById('cancelQuizBtn').addEventListener('click', () => showSec
 document.getElementById('retryBtn').addEventListener('click', startQuiz);
 document.getElementById('homeBtn').addEventListener('click', () => showSection('welcome'));
 
+// Dark mode toggle
+document.getElementById('darkModeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
 // App Init
 (function init(){
+  initTheme(); // <- vælg og anvend tema ved load
+
   const existing = loadUser();
   if(existing){
     currentUser = existing;
