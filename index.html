@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.19.1">
+    <link rel="stylesheet" href="assets/styles.css?v=1.19.5">
   </head>
   <body>
     <!-- Header -->
@@ -21,7 +21,7 @@
           <div class="logo">ES</div>
           <div>
             Project ESBLAG
-            <div class="small muted">Education Should Be Like A Game • V1.19.0</div>
+            <div class="small muted">Education Should Be Like A Game • V1.19.5</div>
           </div>
         </div>
         <div class="spacer"></div>
@@ -39,28 +39,27 @@
 
     <main class="wrap">
 
-      <!-- Login / Signup -->
-      <section id="auth" style="display:none">
+      <!-- Auth (local profile only) -->
+      <section id="auth">
         <div class="grid">
           <div class="card">
-            <h2>Log ind</h2>
-            <form id="loginForm" class="auth-form">
-              <label for="loginEmail">Email</label>
-              <input id="loginEmail" type="email" required>
-              <label for="loginPassword">Adgangskode</label>
-              <input id="loginPassword" type="password" required>
-              <button type="submit">Log ind</button>
+            <h2 style="margin-top:0">Lav en lokal profil</h2>
+            <p class="muted">Vi gemmer kun lokalt i din browser.</p>
+            <form id="authForm" class="auth-form">
+              <label for="authName">Navn</label>
+              <input id="authName" name="name" type="text" placeholder="Fx Malthe" required>
+              <label for="authAge">Alder</label>
+              <input id="authAge" name="age" type="number" min="8" max="99" placeholder="Fx 18" required>
+              <div id="authError" class="error" style="display:none; margin-top:8px"></div>
+              <div class="row" style="margin-top:12px">
+                <button type="submit">Kom ind</button>
+                <button id="authReset" type="button" class="secondary">Nulstil fejl</button>
+              </div>
             </form>
           </div>
           <div class="card">
-            <h2>Opret konto</h2>
-            <form id="signupForm" class="auth-form">
-              <label for="signupEmail">Email</label>
-              <input id="signupEmail" type="email" required>
-              <label for="signupPassword">Adgangskode</label>
-              <input id="signupPassword" type="password" required>
-              <button type="submit">Opret</button>
-            </form>
+            <h2>Om Project ESBLAG</h2>
+            <p>Education Should Be Like A Game 🚀 — spil dig til viden, level op, og lås achievements op.</p>
           </div>
         </div>
       </section>
@@ -69,9 +68,36 @@
       <section id="welcome" style="display:none">
         <div class="grid">
           <div class="card welcome">
-            <h1 class="big-title">Velkommen 👋</h1>
+            <h1 class="big-title">Velkommen, <span id="welcomeName">ven</span> 👋</h1>
             <p class="subtitle">Klar til at lære gennem leg?</p>
-            <button id="startQuizBtn" type="button">Start quiz</button>
+
+            <!-- Pet / Level -->
+            <div class="pet">
+              <div class="bubble"><span id="petEmoji">🐣</span></div>
+              <div>
+                <div class="level-box">Level <span id="levelText">1</span></div>
+                <div id="tierLine" class="tier-line">Egg — Starter som et lille æg</div>
+                <div class="xpbar" style="margin:8px 0 4px"><span id="xpFill" style="width:0%"></span></div>
+                <div id="xpLabel" class="small muted">0 / 50 XP til næste level</div>
+              </div>
+            </div>
+
+            <!-- Streak -->
+            <div style="margin-top:12px">
+              <div class="row">
+                <div class="streak-icon" title="Perfekte runder i træk">🔥</div>
+                <strong>Streak:</strong>
+                <span id="streakCountWelcome">0</span>
+                <span class="muted">• Bonus</span>
+                <strong id="streakBonusWelcome">x1.0</strong>
+                <span id="streakMaxWelcome" class="pill" style="display:none">MAX</span>
+              </div>
+              <div class="streakbar" style="margin-top:6px"><span id="streakFillWelcome" style="width:0%"></span></div>
+            </div>
+
+            <div class="row" style="margin-top:14px">
+              <button id="startQuizBtn" type="button">Start quiz</button>
+            </div>
           </div>
         </div>
       </section>
@@ -92,12 +118,61 @@
       <section id="quiz" style="display:none">
         <div class="card quiz">
           <div class="row">
-            <div><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span></div>
+            <div><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span> • 🔥<span id="streakBadgeQuiz">0</span></div>
           </div>
-          <div id="questionText" class="question">Spørgsmål</div>
-          <div id="options" class="options"></div>
+          <div id="qText" class="question">Spørgsmål</div>
+          <div id="qOptions" class="options"></div>
           <div class="row">
-            <button id="nextBtn" class="secondary" type="button" disabled>Næste</button>
+            <button id="nextBtn" class="secondary" type="button">Næste</button>
+            <button id="cancelQuizBtn" class="ghost" type="button">Afbryd</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section id="result" style="display:none">
+        <div class="card">
+          <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
+
+          <!-- Pet / Level Snapshot -->
+          <div class="pet" style="margin-top:8px">
+            <div class="bubble"><span id="petEmojiResult">🐣</span></div>
+            <div>
+              <div class="level-box">Level <span id="levelTextResult">1</span></div>
+              <div id="tierLineResult" class="tier-line">Egg — Starter som et lille æg</div>
+              <div class="xpbar" style="margin:8px 0 4px"><span id="xpFillResult" style="width:0%"></span></div>
+              <div id="xpLabelResult" class="small muted">0 / 50 XP til næste level</div>
+            </div>
+          </div>
+
+          <!-- Streak -->
+          <div style="margin-top:10px">
+            <div class="row">
+              <div class="streak-icon" title="Perfekte runder i træk">🔥</div>
+              <strong>Streak:</strong>
+              <span id="streakCountResult">0</span>
+              <span class="muted">• Bonus</span>
+              <strong id="streakBonusResult">x1.0</strong>
+              <span id="streakMaxResult" class="pill" style="display:none">MAX</span>
+            </div>
+            <div class="streakbar" style="margin-top:6px"><span id="streakFillResult" style="width:0%"></span></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="row" style="margin-top:12px">
+            <div class="pill">✅ Rigtige: <strong id="correctCount">0</strong>/<span id="totalCount">0</span></div>
+            <div class="pill">⭐ XP tjent: <strong id="xpEarned">0</strong></div>
+          </div>
+
+          <!-- Wrong answers -->
+          <div id="wrongAnswers" style="margin-top:14px; display:none">
+            <h3 style="margin:6px 0 8px">Hvor gik det galt?</h3>
+            <ul id="wrongList" style="margin:0; padding-left:18px"></ul>
+          </div>
+
+          <div class="row" style="margin-top:14px">
+            <button id="retryBtn" type="button">Prøv igen</button>
+            <button id="homeBtn" class="secondary" type="button">Hjem</button>
           </div>
         </div>
       </section>
@@ -106,7 +181,7 @@
       <section id="achievements" style="display:none">
         <div class="card">
           <h2>🏆 Achievements</h2>
-          <div id="achList" class="ach-grid"></div>
+          <div id="achGrid" class="ach-grid"></div>
           <div class="row" style="margin-top:14px">
             <button class="secondary" id="backFromAchievements" type="button">Tilbage</button>
           </div>
@@ -135,6 +210,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="assets/app.js?v=1.19.0" defer></script>
+    <script src="assets/app.js?v=1.19.5" defer></script>
   </body>
 </html>
