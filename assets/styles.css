@@ -158,13 +158,26 @@ main{ padding:28px 16px; }
   border-color: #2a2f45;
 }
 .metrics{ display:flex; flex-direction:column; gap:6px }
-.level-line{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+.level-line {
+  display: flex;
+  align-items: center; /* centrer tekst lodret */
+  gap: 8px;           /* afstand mellem Level-boksen og beskrivelsen */
+  margin-bottom: 6px; /* luft ned til XP-baren */
+}
 .meter{ width: clamp(240px, 60vw, 420px); }   /* samme bredde som i din gamle stil */
 
 .xpbar{ height:10px; background:color-mix(in oklab, var(--ink) 10%, transparent); border-radius:999px; overflow:hidden; }
 .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), #00d2ff); transition: width .5s ease }
-.tier-line{ color:var(--muted); font-size:14px; font-weight:700 }
-.level-box{ font-weight:900 }
+.tier-line {
+  font-size: 0.95rem;
+  color: var(--text-muted, #666);
+}
+.level-box {
+  background: var(--accent-bg, #eef3ff);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
 
 /* ========= STREAK ========= */
 .streakbar{ height:10px; border-radius:999px; overflow:hidden; background: var(--streak-bg); border:2px solid var(--streak-border); }
