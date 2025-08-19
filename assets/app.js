@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.19.5';
+const APP_VERSION = 'V1.19.7.1';
 
 const EVOLUTIONS = [
   { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣',   desc: 'Starter som et lille æg' },
@@ -320,13 +320,27 @@ function nextQuestion(){
   else{ finishQuiz(); }
 }
 
+// Smartere feedback-tekst til resultatet
+function getQuizResultMessage(score, total){
+  const r = score / total;
+  if (score === 0) return "Øv 😅 Prøv igen – du kan sagtens!";
+  if (r <= 0.4)     return "Godt forsøgt! 💪 Du lærer for hvert forsøg.";
+  if (r <= 0.7)     return "Fint gået! 🚀 Du er på vej.";
+  if (r < 1)        return "Næsten perfekt! 🔥";
+  return "Perfekt! 🌟";
+}
+
 function finishQuiz(){
   let correct = 0;
   const wrongItems = [];
   currentQuestions.forEach((q, i) => {
     if(selections[i] === q.correctIndex){ correct++; }
     else{
-      wrongItems.push({ q: q.text, your: (Number.isInteger(selections[i]) ? q.options[selections[i]] : '—'), right: q.options[q.correctIndex] });
+      wrongItems.push({
+        q: q.text,
+        your: (Number.isInteger(selections[i]) ? q.options[selections[i]] : '—'),
+        right: q.options[q.correctIndex]
+      });
     }
   });
 
@@ -353,21 +367,28 @@ function finishQuiz(){
   saveUser();
 
   const levelAfter = getLevel(currentUser.xp || 0);
-  document.getElementById('resultTitle').textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
+
+  // Brug smart feedback-tekst
+  const titleEl = document.getElementById('resultTitle');
+  if (titleEl) titleEl.textContent = getQuizResultMessage(correct, currentQuestions.length);
+
   document.getElementById('correctCount').textContent = correct;
   document.getElementById('totalCount').textContent = currentQuestions.length;
   document.getElementById('xpEarned').textContent = earned;
 
+  // Fejloversigt – semantiske klasser (matcher CSS)
   const wrongWrap = document.getElementById('wrongAnswers');
   const wrongList = document.getElementById('wrongList');
-  if(wrongItems.length === 0){ wrongWrap.style.display = 'none'; wrongList.innerHTML = ''; }
-  else{
+  if(wrongItems.length === 0){
+    wrongWrap.style.display = 'none';
+    wrongList.innerHTML = '';
+  } else {
     wrongWrap.style.display = '';
     wrongList.innerHTML = wrongItems.map(item => `
       <li>
-        <div style="font-weight:900;">${item.q}</div>
-        <div style="color:#b91c1c;">Dit svar: ${item.your}</div>
-        <div style="color:#065f46; font-weight:800;">Korrekt svar: ${item.right}</div>
+        <div class="q-title">${item.q}</div>
+        <div class="your-answer">Dit svar: ${item.your}</div>
+        <div class="correct-answer">Korrekt svar: ${item.right}</div>
       </li>
     `).join('');
   }
