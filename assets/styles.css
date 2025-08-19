@@ -60,7 +60,6 @@ header{
   backdrop-filter: blur(6px);
   border-bottom:1px solid var(--border);
 
-  /* flex layout (én linje på desktop) */
   display:flex; align-items:center; justify-content:space-between;
   flex-wrap:nowrap; gap:1rem; padding:0.5rem 1rem;
 }
@@ -78,10 +77,8 @@ header{
 }
 .pill{font-weight:700; font-size:14px; padding:8px 12px; border-radius:999px; background:var(--soft); color:var(--ink)}
 
-/* Ekstra (hvis du bruger .header-left/.header-right i HTML) */
+/* Responsive header */
 .header-left,.header-right{ display:flex; align-items:center; gap:.75rem; flex-wrap:nowrap }
-
-/* Skjul logo på mobil (slår .brand .logo’s display:grid) */
 @media (max-width: 600px){
   .brand .logo{ display:none !important; }
   header{ flex-direction:column; align-items:flex-start; gap:.5rem; }
@@ -181,7 +178,7 @@ main{ padding:32px 16px; }
 .answer-btn:hover{ transform: translateY(-1px); background:color-mix(in oklab, var(--soft) 85%, #fff 15%); }
 :root[data-theme="dark"] .answer-btn:hover{ background:color-mix(in oklab, var(--soft) 75%, #1b2338 25%); }
 
-/* VALGT SVAR – blå uanset hover/focus/active */
+/* Selected answer */
 .answer-btn.selected,
 .answer-btn.selected:hover,
 .answer-btn.selected:focus,
@@ -191,7 +188,7 @@ main{ padding:32px 16px; }
   color: #fff !important;
 }
 
-/* Fokus-ring */
+/* Focus */
 .answer-btn:focus { outline: none; }
 .answer-btn:focus-visible {
   outline: 2px solid color-mix(in oklab, var(--brand) 80%, white);
@@ -247,8 +244,6 @@ main{ padding:32px 16px; }
 
 /* ========= MICRO-ANIMS ========= */
 @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
-
-/* 🔥 Streak-ikon hop */
 .streak-icon{ display:inline-block; cursor:default; transition: transform .2s ease; }
 .streak-icon:hover{ animation: hop 600ms ease; }
 @keyframes hop{ 0%{transform:translateY(0)} 30%{transform:translateY(-6px)} 60%{transform:translateY(0)} 80%{transform:translateY(-3px)} 100%{transform:translateY(0)} }
@@ -276,7 +271,7 @@ main{ padding:32px 16px; }
 .badge-state.locked{ color:#64748b }
 .badge-state.unlocked{ color:#0f766e }
 
-/* ========= ACHIEVEMENT POPUP (smooth queue) ========= */
+/* ========= ACHIEVEMENT POPUP ========= */
 .ach-popup{
   position: fixed; right: 16px; top: 16px; z-index: 9999;
   display: flex; gap:10px; align-items:center;
