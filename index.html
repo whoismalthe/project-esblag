@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.19.5">
+    <!-- CSS (cache-bust) -->
+    <link rel="stylesheet" href="assets/styles.css?v=1.19.5-quizbar">
   </head>
   <body>
     <!-- Header -->
@@ -114,14 +114,21 @@
       <!-- Quiz -->
       <section id="quiz" style="display:none">
         <div class="card quiz">
-          <div class="row">
-            <div class="muted"><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span> • 🔥<span id="streakBadgeQuiz">0</span></div>
+          <!-- NY TOPBJÆLKE: breadcrumb + streak -->
+          <div class="quiz-top">
+            <div class="quiz-breadcrumb">
+              <span class="kicker">Quiz</span>
+              • <span id="qCatLabel">Blandet</span>
+              • <span id="qProgress">1 / 10</span>
+            </div>
+            <div class="quiz-streak">Streak: 🔥 <span id="streakBadgeQuiz">0</span></div>
           </div>
+
           <h2 id="qText" class="question">Spørgsmål</h2>
           <div id="qOptions" class="options"></div>
           <div class="row">
             <button id="nextBtn" class="primary pill-btn" type="button">Næste</button>
-            <button id="cancelQuizBtn" class="ghost pill-btn" type="button">Afbyrd</button>
+            <button id="cancelQuizBtn" class="ghost pill-btn" type="button">Afbryd</button>
           </div>
         </div>
       </section>
@@ -191,7 +198,7 @@
       </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="assets/app.js?v=1.19.5" defer></script>
+    <!-- Scripts (cache-bust) -->
+    <script src="assets/app.js?v=1.19.5-quizbar" defer></script>
   </body>
 </html>
