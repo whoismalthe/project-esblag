@@ -1,9 +1,8 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.19.5';
+const APP_VERSION = 'V1.19.6';
 
-// Evolution mapping
 const EVOLUTIONS = [
   { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣',   desc: 'Starter som et lille æg' },
   { min: 2,  max: 3,  tier: 'Chick',      emoji: '🐥',   desc: 'Klækker til kylling' },
@@ -27,7 +26,6 @@ const CATEGORIES = {
   geo:   { key: 'geo',   title: 'Geografi',  icon: '🌍', desc: 'Lande, byer og natur.' },
 };
 
-// Spørgsmål pr. kategori
 const QUESTIONS_BY_CATEGORY = {
   mixed: [
     { text: 'Hvad er 7 + 5?', options: ['10','12','13','14'], correctIndex: 1 },
@@ -67,12 +65,11 @@ const QUESTIONS_BY_CATEGORY = {
   ],
 };
 
-// Aktiv kategori
 let activeCategory = 'mixed';
 let currentQuestions = [];
 
 // ===============================
-// Theme (Dark/Light)
+// Theme
 // ===============================
 const THEME_KEY = 'esblag_theme';
 function applyTheme(theme){
@@ -89,16 +86,15 @@ function initTheme(){
 }
 
 // ===============================
-// State, Stats & XP Helpers
+// State & XP
 // ===============================
 let currentUser = null;
 
 const STORAGE_KEY = 'esblag_user_v1';
-const XP_PER_CORRECT = 10;   // +10 XP pr. korrekt svar
-const STREAK_STEP = 0.2;     // +20% XP pr. streak-niveau
-const STREAK_MAX_FOR_2X = 5; // 5 perfekte runder giver 2.0x
+const XP_PER_CORRECT = 10;
+const STREAK_STEP = 0.2;
+const STREAK_MAX_FOR_2X = 5;
 
-// Progressive XP-kurve: 1→2: 50, 2→3: 70, 3→4: 90, ...
 function xpRequiredForLevel(level){ return 50 + Math.max(0,(level-1))*20; }
 function totalXpForLevel(level){ let t=0; for(let L=1; L<level; L++) t+=xpRequiredForLevel(L); return t; }
 function getLevel(xp){ let L=1; while(xp >= totalXpForLevel(L+1)) L++; return L; }
@@ -110,7 +106,6 @@ function getXPPercent(xp){
   return Math.round(100*into/need);
 }
 
-// Storage + auth
 function loadUser(){
   try{ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : null; }
   catch(e){ return null; }
@@ -170,7 +165,6 @@ function updateStreakBars(){
     sfr.classList.toggle('maxed', multiplier >= 2.0);
   }
 
-  // Quiz top badge
   const sbq = document.getElementById('streakBadgeQuiz');
   if (sbq) sbq.textContent = s;
 }
@@ -183,7 +177,6 @@ function updatePetWidgets(){
   const need = xpRequiredForLevel(level);
   const evo = getEvolutionForLevel(level);
 
-  // Welcome
   document.getElementById('welcomeName').textContent = currentUser.name;
   document.getElementById('petEmoji').textContent = evo.emoji;
   document.getElementById('levelText').textContent = level;
@@ -191,18 +184,16 @@ function updatePetWidgets(){
   document.getElementById('xpFill').style.width = percent + '%';
   document.getElementById('xpLabel').textContent = `${into} / ${need} XP til næste level`;
 
-  // Result
   document.getElementById('petEmojiResult').textContent = evo.emoji;
   document.getElementById('levelTextResult').textContent = level;
   document.getElementById('tierLineResult').textContent = `${evo.tier} — ${evo.desc}`;
   document.getElementById('xpFillResult').style.width = percent + '%';
   document.getElementById('xpLabelResult').textContent = `${into} / ${need} XP til næste level`;
 
-  // Streak bars
   updateStreakBars();
 }
 
-// Sektioner (+ lås før login)
+// Sections
 let lastSection = 'welcome';
 function showSection(id){
   const loggedIn = !!currentUser;
@@ -225,18 +216,17 @@ function showToast(msg){
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-// Level-up effekter
 function playLevelUpEffects(){
   ['petEmoji','petEmojiResult'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
     el.style.animation = 'none';
-    el.offsetHeight; // reflow
+    el.offsetHeight;
     el.style.animation = 'pop 800ms ease';
   });
-  launchConfetti(140);
+  launchConfetti(100);
 }
-function launchConfetti(n=120){
+function launchConfetti(n=80){
   for(let i=0;i<n;i++){
     const piece = document.createElement('div');
     const size = 6 + Math.random()*6;
@@ -248,9 +238,9 @@ function launchConfetti(n=120){
     piece.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
     piece.style.opacity = '0.9';
     piece.style.borderRadius = '2px';
-    piece.style.animationDuration = (1.8 + Math.random()*1.2) + 's';
+    piece.style.animationDuration = (1.6 + Math.random()*1.2) + 's';
     document.body.appendChild(piece);
-    setTimeout(()=> piece.remove(), 3200);
+    setTimeout(()=> piece.remove(), 3000);
   }
 }
 
@@ -266,11 +256,9 @@ function setActiveCategory(key){
   const label = document.getElementById('qCatLabel');
   if (label) label.textContent = CATEGORIES[activeCategory].title;
 }
-
 function getActiveQuestions(){
   return QUESTIONS_BY_CATEGORY[activeCategory] || QUESTIONS_BY_CATEGORY.mixed || [];
 }
-
 function renderCategories(){
   const grid = document.getElementById('catGrid');
   if (!grid) return;
@@ -288,8 +276,6 @@ function renderCategories(){
       </button>
     `;
   }).join('');
-
-  // Single handler (prevents duplicate listeners)
   grid.onclick = (e) => {
     const btn = e.target.closest('.cat-card');
     if (!btn) return;
@@ -380,8 +366,7 @@ function finishQuiz(){
   // Streak (perfekte runder)
   let streak = currentUser.streak || 0;
   const perfect = (correct === currentQuestions.length);
-  if (perfect) streak = streak + 1;
-  else streak = 0;
+  streak = perfect ? streak + 1 : 0;
   currentUser.streak = streak;
 
   // Stats
@@ -415,7 +400,7 @@ function finishQuiz(){
   }else{
     wrongWrap.style.display = '';
     wrongList.innerHTML = wrongItems.map(item => `
-      <li style="margin-bottom:10px; background:#fff1f2; border:1px solid #fecdd3; padding:8px 10px; border-radius:10px;">
+      <li>
         <div style="font-weight:800;">${item.q}</div>
         <div style="color:#b91c1c;">Dit svar: ${item.your}</div>
         <div style="color:#065f46; font-weight:800;">Korrekt svar: ${item.right}</div>
@@ -423,11 +408,9 @@ function finishQuiz(){
     `).join('');
   }
 
-  // UI update
   updateHeader();
   updatePetWidgets();
 
-  // Level-up effekter
   if (levelAfter > levelBefore){
     const evoBefore = getEvolutionForLevel(levelBefore);
     const evoAfter  = getEvolutionForLevel(levelAfter);
@@ -436,14 +419,13 @@ function finishQuiz(){
     playLevelUpEffects();
   }
 
-  // Achievements
   checkAndUnlockAchievements();
 
   showSection('result');
 }
 
 // ===============================
-// Achievements (MVP) + Queue Popup
+// Achievements
 // ===============================
 const ACHIEVEMENTS = [
   { id:'first_answer', icon:'🎯', title:'First Step', desc:'Svar på dit første spørgsmål.', isUnlocked:(u)=> (u?.stats?.totalAnswered||0) >= 1 },
@@ -460,11 +442,9 @@ function getAchState(){
   currentUser.achievements = currentUser.achievements || { unlocked: {} };
   return currentUser.achievements;
 }
-
 function checkAndUnlockAchievements(){
   const state = getAchState();
   const newly = [];
-
   ACHIEVEMENTS.forEach(a => {
     const already = !!state.unlocked[a.id];
     const ok = a.isUnlocked(currentUser);
@@ -473,19 +453,16 @@ function checkAndUnlockAchievements(){
       newly.push(a);
     }
   });
-
   if (newly.length){
     saveUser();
     renderAchievements();
     newly.forEach(a => queueAchPopup(a));
   }
 }
-
 function renderAchievements(){
   const grid = document.getElementById('achGrid');
   if (!grid) return;
   const state = getAchState();
-
   grid.innerHTML = ACHIEVEMENTS.map(a => {
     const unlocked = !!state.unlocked[a.id];
     const cls = 'badge-card' + (unlocked ? '' : ' badge-locked');
@@ -503,24 +480,16 @@ function renderAchievements(){
   }).join('');
 }
 
-// ----- Popup Queue -----
+// Popup queue
 const achQueue = [];
 let achShowing = false;
-
-function queueAchPopup(a){
-  achQueue.push(a);
-  if (!achShowing) processAchQueue();
-}
-
+function queueAchPopup(a){ achQueue.push(a); if (!achShowing) processAchQueue(); }
 function processAchQueue(){
   if (!achQueue.length) { achShowing = false; return; }
   achShowing = true;
   const a = achQueue.shift();
-  showAchPopup(a).then(() => {
-    setTimeout(processAchQueue, 180);
-  });
+  showAchPopup(a).then(() => setTimeout(processAchQueue, 180));
 }
-
 function showAchPopup(a){
   return new Promise((resolve) => {
     const el = document.getElementById('achPopup');
@@ -533,13 +502,8 @@ function showAchPopup(a){
     `;
     el.classList.remove('hide');
     el.classList.add('show');
-    const visibleMs = 2000;
-    const transitionMs = 250;
-    setTimeout(() => {
-      el.classList.remove('show');
-      el.classList.add('hide');
-      setTimeout(() => resolve(), transitionMs);
-    }, visibleMs);
+    const visibleMs = 2000, transitionMs = 250;
+    setTimeout(() => { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => resolve(), transitionMs); }, visibleMs);
   });
 }
 
@@ -548,7 +512,6 @@ function showAchPopup(a){
 // ===============================
 document.getElementById('logoutBtn')?.addEventListener('click', logout);
 
-// Auth (local)
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
 authForm?.addEventListener('submit', (e) => {
@@ -583,7 +546,6 @@ authForm?.addEventListener('submit', (e) => {
 
 document.getElementById('authReset')?.addEventListener('click', () => { if (authError) authError.style.display = 'none'; });
 
-// Start quiz → kategorier
 document.getElementById('startQuizBtn')?.addEventListener('click', () => {
   if (!currentUser) { showSection('auth'); return; }
   renderCategories();
@@ -594,16 +556,13 @@ document.getElementById('retryBtn')?.addEventListener('click', () => startQuiz()
 document.getElementById('homeBtn')?.addEventListener('click', () => showSection('welcome'));
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
-// Næste
 document.getElementById('nextBtn')?.addEventListener('click', (e) => { e.preventDefault(); nextQuestion(); });
 
-// Dark mode toggle
 document.getElementById('darkModeToggle')?.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
-// Nav (Achievements)
 document.getElementById('navAchBtn')?.addEventListener('click', () => {
   if (!currentUser){
     showToast('Lav en profil først for at se achievements.');
@@ -613,14 +572,9 @@ document.getElementById('navAchBtn')?.addEventListener('click', () => {
   renderAchievements();
   showSection('achievements');
 });
-
-// Back fra kategorier
 document.getElementById('backFromCategories')?.addEventListener('click', () => showSection('welcome'));
-
-// Back fra achievements
 document.getElementById('backFromAchievements')?.addEventListener('click', () => showSection(lastSection));
 
-// App Init
 (function init(){
   initTheme();
 
@@ -644,6 +598,5 @@ document.getElementById('backFromAchievements')?.addEventListener('click', () =>
     showSection('auth');
   }
 
-  // Preload questions & prepare initial UI
   currentQuestions = getActiveQuestions();
 })();
