@@ -1,18 +1,17 @@
 <!doctype html>
-
 <html lang="da">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Project ESBLAG — MVP</title>
 
-    <!-- Font: Inter -->
+    <!-- Fonts (classic look) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.19.6">
+    <link rel="stylesheet" href="assets/styles.css?v=1.19.5">
   </head>
   <body>
     <!-- Header -->
@@ -27,16 +26,16 @@
         </div>
       </div>
       <div class="wrap row header-right">
-        <button id="darkModeToggle" class="ghost" aria-label="Skift tema" type="button">🌙 Dark</button>
-        <button id="navAchBtn" class="ghost" type="button">🏆 Achievements</button>
-        <div id="userBadge" class="pill" style="display:none"></div>
-        <button id="logoutBtn" class="ghost" style="display:none" type="button">Log ud</button>
+        <button id="darkModeToggle" class="ghost pill-btn" type="button">🌙 Dark</button>
+        <button id="navAchBtn" class="ghost pill-btn" type="button">🏆 Achievements</button>
+        <div id="userBadge" class="pill user-pill" style="display:none"></div>
+        <button id="logoutBtn" class="ghost pill-btn" style="display:none" type="button">Log ud</button>
       </div>
     </header>
 
     <main class="wrap">
 
-      <!-- Lokal profil -->
+      <!-- Lokal profil (kun navn + alder) -->
       <section id="auth">
         <div class="grid">
           <div class="card">
@@ -49,14 +48,14 @@
               <input id="authAge" name="age" type="number" min="8" max="99" placeholder="Fx 18" required>
               <div id="authError" class="error" style="display:none; margin-top:8px"></div>
               <div class="row" style="margin-top:12px">
-                <button type="submit">Kom ind</button>
-                <button id="authReset" type="button" class="secondary">Nulstil fejl</button>
+                <button type="submit" class="primary pill-btn">Kom ind</button>
+                <button id="authReset" type="button" class="secondary pill-btn">Nulstil fejl</button>
               </div>
             </form>
           </div>
           <div class="card">
             <h2 class="h2">Om Project ESBLAG</h2>
-            <p>Spil dig til viden, level op, og lås achievements op. Simpelt og sjovt. 🚀</p>
+            <p>Spil dig til viden, level op, og lås achievements op. 🚀</p>
           </div>
         </div>
       </section>
@@ -94,7 +93,7 @@
             </div>
 
             <div class="row" style="margin-top:14px">
-              <button id="startQuizBtn" type="button">Start quiz</button>
+              <button id="startQuizBtn" type="button" class="primary pill-btn">Start quiz</button>
             </div>
           </div>
         </div>
@@ -107,7 +106,7 @@
           <p class="muted small">Quizzen bruger spørgsmål fra den valgte kategori.</p>
           <div id="catGrid" class="cat-grid"></div>
           <div class="row" style="margin-top:14px">
-            <button class="secondary" id="backFromCategories" type="button">Tilbage</button>
+            <button class="secondary pill-btn" id="backFromCategories" type="button">Tilbage</button>
           </div>
         </div>
       </section>
@@ -118,22 +117,24 @@
           <div class="row">
             <div class="muted"><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span> • 🔥<span id="streakBadgeQuiz">0</span></div>
           </div>
-          <div id="qText" class="question">Spørgsmål</div>
+          <h2 id="qText" class="question">Spørgsmål</h2>
           <div id="qOptions" class="options"></div>
           <div class="row">
-            <button id="nextBtn" class="primary" type="button">Næste</button>
-            <button id="cancelQuizBtn" class="ghost" type="button">Afbryd</button>
+            <button id="nextBtn" class="primary pill-btn" type="button">Næste</button>
+            <button id="cancelQuizBtn" class="ghost pill-btn" type="button">Afbyrd</button>
           </div>
         </div>
       </section>
 
       <!-- Result -->
       <section id="result" style="display:none">
-        <div class="card">
-          <h2 id="resultTitle" class="h2">Flot klaret! 🎯</h2>
+        <div class="card result-card center">
+          <h2 id="resultTitle" class="big-title">Flot klaret! 🎯</h2>
+          <p class="subtitle">Du fik <strong id="correctCount">0</strong>/<span id="totalCount">0</span> rigtige.</p>
+          <p class="subtitle">Du tjente <strong id="xpEarned">0</strong> XP.</p>
 
           <!-- Pet / Level Snapshot -->
-          <div class="pet" style="margin-top:8px">
+          <div class="pet center" style="justify-content:center; margin-top:6px">
             <div class="bubble"><span id="petEmojiResult">🐣</span></div>
             <div class="metrics">
               <div class="level-line">
@@ -142,35 +143,26 @@
               </div>
               <div class="xpbar meter"><span id="xpFillResult" style="width:0%"></span></div>
               <div id="xpLabelResult" class="small muted">0 / 50 XP til næste level</div>
+              <div class="metrics" style="margin-top:6px">
+                <div class="row center" style="justify-content:flex-start">
+                  <span class="muted">Streak:</span>&nbsp;🔥<strong id="streakCountResult">0</strong>
+                  <span class="muted">• Bonus:</span>&nbsp;<strong id="streakBonusResult">x1.0</strong>
+                  <span id="streakMaxResult" class="pill" style="display:none">MAX</span>
+                </div>
+                <div class="streakbar meter"><span id="streakFillResult" style="width:0%"></span></div>
+              </div>
             </div>
           </div>
 
-          <!-- Streak -->
-          <div class="metrics" style="margin-top:8px">
-            <div class="row">
-              <span class="muted">🔥 Streak:</span>
-              <strong id="streakCountResult">0</strong>
-              <span class="muted">• Bonus</span>
-              <strong id="streakBonusResult">x1.0</strong>
-              <span id="streakMaxResult" class="pill" style="display:none">MAX</span>
-            </div>
-            <div class="streakbar meter"><span id="streakFillResult" style="width:0%"></span></div>
-          </div>
-
-          <!-- Stats -->
-          <div class="row stat-row">
-            <div class="chip">✅ Rigtige: <strong id="correctCount">0</strong>/<span id="totalCount">0</span></div>
-            <div class="chip">⭐ XP tjent: <strong id="xpEarned">0</strong></div>
-          </div>
-
+          <!-- Wrong answers -->
           <div id="wrongAnswers" style="margin-top:10px; display:none">
             <h3 class="h3">Hvor gik det galt?</h3>
             <ul id="wrongList" class="wrong-list"></ul>
           </div>
 
-          <div class="row" style="margin-top:12px">
-            <button id="retryBtn" type="button">Prøv igen</button>
-            <button id="homeBtn" class="secondary" type="button">Hjem</button>
+          <div class="row" style="margin-top:12px; justify-content:center">
+            <button id="retryBtn" type="button" class="primary pill-btn">Prøv quizzen igen</button>
+            <button id="homeBtn" class="secondary pill-btn" type="button">Til velkomst</button>
           </div>
         </div>
       </section>
@@ -181,7 +173,7 @@
           <h2 class="h2">🏆 Achievements</h2>
           <div id="achGrid" class="ach-grid"></div>
           <div class="row" style="margin-top:12px">
-            <button class="secondary" id="backFromAchievements" type="button">Tilbage</button>
+            <button class="secondary pill-btn" id="backFromAchievements" type="button">Tilbage</button>
           </div>
         </div>
       </section>
@@ -200,6 +192,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="assets/app.js?v=1.19.6" defer></script>
+    <script src="assets/app.js?v=1.19.5" defer></script>
   </body>
 </html>
