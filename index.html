@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Project ESBLAG — MVP V1.18.4</title>
+    <title>Project ESBLAG — MVP V1.19.0</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.18.52">
+    <link rel="stylesheet" href="assets/styles.css?v=1.19.0">
   </head>
   <body>
     <header>
@@ -20,7 +20,7 @@
       <div class="logo">ES</div>
       <div>
         Project ESBLAG
-        <div class="small muted">Education Should Be Like A Game • V1.18.4</div>
+        <div class="small muted">Education Should Be Like A Game • V1.19.0</div>
       </div>
     </div>
     <div id="userBadge" class="pill" style="display:none"></div>
@@ -41,6 +41,18 @@
     <main class="wrap">
       <!-- SECTION: Welcome -->
       <section id="welcome" style="display:none">
+        <!-- Categories -->
+<section id="categories" style="display:none">
+  <div class="card">
+    <h2 style="margin-top:0">Vælg kategori</h2>
+    <p class="muted small">Vælg et tema – quizzen bruger spørgsmål fra den valgte kategori.</p>
+    <div id="catGrid" class="cat-grid"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="secondary" id="backFromCategories" type="button">Tilbage</button>
+    </div>
+  </div>
+</section>
+
         <div class="grid">
           <div class="card welcome">
             <div class="big-title">Velkommen, <span id="welcomeName">ven</span>! 🎉</div>
@@ -120,7 +132,8 @@
       <section id="quiz" style="display:none">
         <div class="card">
           <div class="row" style="justify-content:space-between; align-items:center">
-            <div><strong>Quiz</strong> • <span id="qProgress">1 / 10</span></div>
+          <div><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span></div>
+
             <div class="small muted">
               Streak: <span class="streak-icon" aria-hidden="true" title="Din streak!">🔥</span>
               <span id="streakBadgeQuiz">0</span>
@@ -198,6 +211,6 @@
     <div id="achPopup" class="ach-popup" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- JS -->
-    <script src="assets/app.js?v=1.18.4" defer></script>
+    <script src="assets/app.js?v=1.19.0" defer></script>
   </body>
 </html>
