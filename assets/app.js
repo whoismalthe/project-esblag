@@ -1,7 +1,7 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.19.6';
+const APP_VERSION = 'V1.19.5';
 
 const EVOLUTIONS = [
   { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣',   desc: 'Starter som et lille æg' },
@@ -13,9 +13,8 @@ const EVOLUTIONS = [
   { min: 16, max: 19, tier: 'Phoenix',    emoji: '🐦‍🔥', desc: 'Mytisk, brændende fugl' },
   { min: 20, max: Infinity, tier: 'Dragon', emoji: '🐉', desc: 'Endgame, kæmpe belønning' },
 ];
-function getEvolutionForLevel(level){
-  return EVOLUTIONS.find(e => level >= e.min && level <= e.max) || EVOLUTIONS[0];
-}
+const getEvolutionForLevel = (level) =>
+  EVOLUTIONS.find(e => level >= e.min && level <= e.max) || EVOLUTIONS[0];
 
 // ===============================
 // Categories & Questions
@@ -89,7 +88,6 @@ function initTheme(){
 // State & XP
 // ===============================
 let currentUser = null;
-
 const STORAGE_KEY = 'esblag_user_v1';
 const XP_PER_CORRECT = 10;
 const STREAK_STEP = 0.2;
@@ -165,6 +163,7 @@ function updateStreakBars(){
     sfr.classList.toggle('maxed', multiplier >= 2.0);
   }
 
+  // Quiz top badge
   const sbq = document.getElementById('streakBadgeQuiz');
   if (sbq) sbq.textContent = s;
 }
@@ -177,6 +176,7 @@ function updatePetWidgets(){
   const need = xpRequiredForLevel(level);
   const evo = getEvolutionForLevel(level);
 
+  // Welcome
   document.getElementById('welcomeName').textContent = currentUser.name;
   document.getElementById('petEmoji').textContent = evo.emoji;
   document.getElementById('levelText').textContent = level;
@@ -184,6 +184,7 @@ function updatePetWidgets(){
   document.getElementById('xpFill').style.width = percent + '%';
   document.getElementById('xpLabel').textContent = `${into} / ${need} XP til næste level`;
 
+  // Result
   document.getElementById('petEmojiResult').textContent = evo.emoji;
   document.getElementById('levelTextResult').textContent = level;
   document.getElementById('tierLineResult').textContent = `${evo.tier} — ${evo.desc}`;
@@ -224,28 +225,12 @@ function playLevelUpEffects(){
     el.offsetHeight;
     el.style.animation = 'pop 800ms ease';
   });
-  launchConfetti(100);
-}
-function launchConfetti(n=80){
-  for(let i=0;i<n;i++){
-    const piece = document.createElement('div');
-    const size = 6 + Math.random()*6;
-    piece.className = 'confetti';
-    piece.style.left = (Math.random()*100) + 'vw';
-    piece.style.top = '-12px';
-    piece.style.width = size + 'px';
-    piece.style.height = size + 'px';
-    piece.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
-    piece.style.opacity = '0.9';
-    piece.style.borderRadius = '2px';
-    piece.style.animationDuration = (1.6 + Math.random()*1.2) + 's';
-    document.body.appendChild(piece);
-    setTimeout(()=> piece.remove(), 3000);
-  }
 }
 
+function launchConfetti(n=0){ /* bevidst roligere i classic; behold evt. fra tidligere */ }
+
 // ===============================
-// Category Helpers
+// Categories
 // ===============================
 function setActiveCategory(key){
   activeCategory = CATEGORIES[key] ? key : 'mixed';
@@ -256,9 +241,8 @@ function setActiveCategory(key){
   const label = document.getElementById('qCatLabel');
   if (label) label.textContent = CATEGORIES[activeCategory].title;
 }
-function getActiveQuestions(){
-  return QUESTIONS_BY_CATEGORY[activeCategory] || QUESTIONS_BY_CATEGORY.mixed || [];
-}
+const getActiveQuestions = () => (QUESTIONS_BY_CATEGORY[activeCategory] || QUESTIONS_BY_CATEGORY.mixed || []);
+
 function renderCategories(){
   const grid = document.getElementById('catGrid');
   if (!grid) return;
@@ -286,7 +270,7 @@ function renderCategories(){
 }
 
 // ===============================
-// Quiz Engine
+// Quiz
 // ===============================
 let qIndex = 0;
 let selections = [];
@@ -294,10 +278,7 @@ let selections = [];
 function startQuiz(){
   if (!currentUser) return showSection('auth');
   currentQuestions = getActiveQuestions();
-  if (!currentQuestions.length){
-    showToast('Denne kategori har ingen spørgsmål endnu.');
-    return;
-  }
+  if (!currentQuestions.length){ showToast('Denne kategori har ingen spørgsmål endnu.'); return; }
   qIndex = 0;
   selections = new Array(currentQuestions.length).fill(null);
   const label = document.getElementById('qCatLabel');
@@ -335,26 +316,17 @@ function renderQuestion(){
 }
 
 function nextQuestion(){
-  if(qIndex < currentQuestions.length - 1){
-    qIndex++;
-    renderQuestion();
-  }else{
-    finishQuiz();
-  }
+  if(qIndex < currentQuestions.length - 1){ qIndex++; renderQuestion(); }
+  else{ finishQuiz(); }
 }
 
 function finishQuiz(){
   let correct = 0;
   const wrongItems = [];
   currentQuestions.forEach((q, i) => {
-    if(selections[i] === q.correctIndex){
-      correct++;
-    } else {
-      wrongItems.push({
-        q: q.text,
-        your: (Number.isInteger(selections[i]) ? q.options[selections[i]] : '—'),
-        right: q.options[q.correctIndex]
-      });
+    if(selections[i] === q.correctIndex){ correct++; }
+    else{
+      wrongItems.push({ q: q.text, your: (Number.isInteger(selections[i]) ? q.options[selections[i]] : '—'), right: q.options[q.correctIndex] });
     }
   });
 
@@ -362,14 +334,11 @@ function finishQuiz(){
   const levelBefore = getLevel(xpBefore);
 
   const baseXP = correct * XP_PER_CORRECT;
-
-  // Streak (perfekte runder)
   let streak = currentUser.streak || 0;
   const perfect = (correct === currentQuestions.length);
   streak = perfect ? streak + 1 : 0;
   currentUser.streak = streak;
 
-  // Stats
   currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
   currentUser.stats.totalAnswered += currentQuestions.length;
   currentUser.stats.totalCorrect += correct;
@@ -384,24 +353,19 @@ function finishQuiz(){
   saveUser();
 
   const levelAfter = getLevel(currentUser.xp || 0);
-  const titleEl = document.getElementById('resultTitle');
-  if (titleEl) titleEl.textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
-
+  document.getElementById('resultTitle').textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
   document.getElementById('correctCount').textContent = correct;
   document.getElementById('totalCount').textContent = currentQuestions.length;
   document.getElementById('xpEarned').textContent = earned;
 
-  // Fejloversigt
   const wrongWrap = document.getElementById('wrongAnswers');
   const wrongList = document.getElementById('wrongList');
-  if(wrongItems.length === 0){
-    wrongWrap.style.display = 'none';
-    wrongList.innerHTML = '';
-  }else{
+  if(wrongItems.length === 0){ wrongWrap.style.display = 'none'; wrongList.innerHTML = ''; }
+  else{
     wrongWrap.style.display = '';
     wrongList.innerHTML = wrongItems.map(item => `
       <li>
-        <div style="font-weight:800;">${item.q}</div>
+        <div style="font-weight:900;">${item.q}</div>
         <div style="color:#b91c1c;">Dit svar: ${item.your}</div>
         <div style="color:#065f46; font-weight:800;">Korrekt svar: ${item.right}</div>
       </li>
@@ -420,7 +384,6 @@ function finishQuiz(){
   }
 
   checkAndUnlockAchievements();
-
   showSection('result');
 }
 
@@ -436,32 +399,15 @@ const ACHIEVEMENTS = [
   { id:'on_fire',      icon:'🔥', title:'On Fire', desc:'Opnå en streak på 5 perfekte runder.', isUnlocked:(u)=> (u?.streak||0) >= 5 },
   { id:'level_5',      icon:'🦉', title:'Level 5', desc:'Nå level 5.', isUnlocked:(u)=> getLevel(u?.xp||0) >= 5 },
 ];
-
-function getAchState(){
-  if (!currentUser) return { unlocked: {} };
-  currentUser.achievements = currentUser.achievements || { unlocked: {} };
-  return currentUser.achievements;
-}
+function getAchState(){ if (!currentUser) return { unlocked: {} }; currentUser.achievements = currentUser.achievements || { unlocked: {} }; return currentUser.achievements; }
 function checkAndUnlockAchievements(){
-  const state = getAchState();
-  const newly = [];
-  ACHIEVEMENTS.forEach(a => {
-    const already = !!state.unlocked[a.id];
-    const ok = a.isUnlocked(currentUser);
-    if (ok && !already){
-      state.unlocked[a.id] = { at: Date.now() };
-      newly.push(a);
-    }
-  });
-  if (newly.length){
-    saveUser();
-    renderAchievements();
-    newly.forEach(a => queueAchPopup(a));
-  }
+  const state = getAchState(); const newly = [];
+  ACHIEVEMENTS.forEach(a => { const already = !!state.unlocked[a.id]; const ok = a.isUnlocked(currentUser);
+    if (ok && !already){ state.unlocked[a.id] = { at: Date.now() }; newly.push(a); }});
+  if (newly.length){ saveUser(); renderAchievements(); newly.forEach(a => queueAchPopup(a)); }
 }
 function renderAchievements(){
-  const grid = document.getElementById('achGrid');
-  if (!grid) return;
+  const grid = document.getElementById('achGrid'); if (!grid) return;
   const state = getAchState();
   grid.innerHTML = ACHIEVEMENTS.map(a => {
     const unlocked = !!state.unlocked[a.id];
@@ -481,15 +427,9 @@ function renderAchievements(){
 }
 
 // Popup queue
-const achQueue = [];
-let achShowing = false;
+const achQueue = []; let achShowing = false;
 function queueAchPopup(a){ achQueue.push(a); if (!achShowing) processAchQueue(); }
-function processAchQueue(){
-  if (!achQueue.length) { achShowing = false; return; }
-  achShowing = true;
-  const a = achQueue.shift();
-  showAchPopup(a).then(() => setTimeout(processAchQueue, 180));
-}
+function processAchQueue(){ if (!achQueue.length) { achShowing = false; return; } achShowing = true; const a = achQueue.shift(); showAchPopup(a).then(() => setTimeout(processAchQueue, 180)); }
 function showAchPopup(a){
   return new Promise((resolve) => {
     const el = document.getElementById('achPopup');
@@ -500,8 +440,7 @@ function showAchPopup(a){
         <div class="small muted">${a.desc}</div>
       </div>
     `;
-    el.classList.remove('hide');
-    el.classList.add('show');
+    el.classList.remove('hide'); el.classList.add('show');
     const visibleMs = 2000, transitionMs = 250;
     setTimeout(() => { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => resolve(), transitionMs); }, visibleMs);
   });
@@ -537,10 +476,7 @@ authForm?.addEventListener('submit', (e) => {
     achievements: { unlocked: {} }
   };
   saveUser();
-  updateHeader();
-  updatePetWidgets();
-  renderAchievements();
-  renderCategories();
+  updateHeader(); updatePetWidgets(); renderAchievements(); renderCategories();
   showSection('welcome');
 });
 
@@ -548,8 +484,7 @@ document.getElementById('authReset')?.addEventListener('click', () => { if (auth
 
 document.getElementById('startQuizBtn')?.addEventListener('click', () => {
   if (!currentUser) { showSection('auth'); return; }
-  renderCategories();
-  showSection('categories');
+  renderCategories(); showSection('categories');
 });
 
 document.getElementById('retryBtn')?.addEventListener('click', () => startQuiz());
@@ -564,13 +499,8 @@ document.getElementById('darkModeToggle')?.addEventListener('click', () => {
 });
 
 document.getElementById('navAchBtn')?.addEventListener('click', () => {
-  if (!currentUser){
-    showToast('Lav en profil først for at se achievements.');
-    showSection('auth');
-    return;
-  }
-  renderAchievements();
-  showSection('achievements');
+  if (!currentUser){ showToast('Lav en profil først for at se achievements.'); showSection('auth'); return; }
+  renderAchievements(); showSection('achievements');
 });
 document.getElementById('backFromCategories')?.addEventListener('click', () => showSection('welcome'));
 document.getElementById('backFromAchievements')?.addEventListener('click', () => showSection(lastSection));
@@ -587,10 +517,7 @@ document.getElementById('backFromAchievements')?.addEventListener('click', () =>
     currentUser.achievements = currentUser.achievements || { unlocked: {} };
     activeCategory = currentUser.lastCategory || 'mixed';
 
-    updateHeader();
-    updatePetWidgets();
-    renderAchievements();
-    renderCategories();
+    updateHeader(); updatePetWidgets(); renderAchievements(); renderCategories();
     const label = document.getElementById('qCatLabel');
     if (label) label.textContent = CATEGORIES[activeCategory].title;
     showSection('welcome');
