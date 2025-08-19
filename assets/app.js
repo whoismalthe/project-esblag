@@ -1,8 +1,7 @@
-
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.18.4';
+const APP_VERSION = 'V1.19.0';
 
 // Evolution mapping (fra din tabel)
 const EVOLUTIONS = [
@@ -18,6 +17,59 @@ const EVOLUTIONS = [
 function getEvolutionForLevel(level){
   return EVOLUTIONS.find(e => level >= e.min && level <= e.max) || EVOLUTIONS[0];
 }
+
+// ===============================
+// Categories & Questions
+// ===============================
+const CATEGORIES = {
+  mixed: { key: 'mixed', title: 'Blandet',   icon: '🎲', desc: 'Et miks af forskellige emner.' },
+  math:  { key: 'math',  title: 'Matematik', icon: '➕', desc: 'Regning, tal og formler.' },
+  geo:   { key: 'geo',   title: 'Geografi',  icon: '🌍', desc: 'Lande, byer og natur.' },
+};
+
+// Spørgsmål pr. kategori (placeholder indhold – kan udbygges)
+const QUESTIONS_BY_CATEGORY = {
+  mixed: [
+    { text: 'Hvad er 7 + 5?', options: ['10','12','13','14'], correctIndex: 1 },
+    { text: 'Hvilken planet kaldes den røde planet?', options: ['Venus','Jorden','Mars','Saturn'], correctIndex: 2 },
+    { text: 'Hvad hedder Danmarks hovedstad?', options: ['Aarhus','København','Odense','Esbjerg'], correctIndex: 1 },
+    { text: 'Hvilket sprog taler man i Spanien?', options: ['Fransk','Italiensk','Spansk','Tysk'], correctIndex: 2 },
+    { text: 'Hvor mange minutter er der i en time?', options: ['30','45','60','90'], correctIndex: 2 },
+    { text: 'Hvad kaldes resultatet af et multiplikationsstykke?', options: ['Sum','Kvotient','Produkt','Differens'], correctIndex: 2 },
+    { text: 'Hvilket dyr er kendt for at have en lang hals?', options: ['Giraf','Hest','Kanin','Krokodille'], correctIndex: 0 },
+    { text: 'Hvad er vandets frysepunkt i °C?', options: ['0°C','10°C','-10°C','32°C'], correctIndex: 0 },
+    { text: 'Hvilket hav ligger mellem Europa og Afrika?', options: ['Stillehavet','Middelhavet','Atlanten','Det Indiske Ocean'], correctIndex: 1 },
+    { text: 'Hvad er 9 × 3?', options: ['18','21','27','36'], correctIndex: 2 },
+  ],
+  math: [
+    { text: 'Hvad er 8 × 6?', options: ['42','46','48','54'], correctIndex: 2 },
+    { text: 'Hvad er kvadratroden af 81?', options: ['7','8','9','10'], correctIndex: 2 },
+    { text: 'Hvad er 15% af 200?', options: ['20','25','30','35'], correctIndex: 2 },
+    { text: 'Hvad er 3³?', options: ['6','9','27','81'], correctIndex: 2 },
+    { text: 'Hvad er 100 / 4?', options: ['15','20','25','30'], correctIndex: 1 },
+    { text: 'Hvad er 12 − 7?', options: ['3','4','5','6'], correctIndex: 2 },
+    { text: 'Hvad er 2 × (5 + 3)?', options: ['16','13','8','10'], correctIndex: 0 },
+    { text: 'Hvilken type tal er π?', options: ['Rationelt','Irrationelt','Primtal','Naturligt tal'], correctIndex: 1 },
+    { text: 'Hvad er 10²?', options: ['20','100','1000','10'], correctIndex: 1 },
+    { text: 'Hvad er medianen af [2, 5, 9]?', options: ['2','5','7','9'], correctIndex: 1 },
+  ],
+  geo: [
+    { text: 'Hvilket land har hovedstaden Madrid?', options: ['Portugal','Spanien','Italien','Frankrig'], correctIndex: 1 },
+    { text: 'Hvad hedder verdens længste flod?', options: ['Nilen','Amazonas','Yangtze','Mississippi'], correctIndex: 1 },
+    { text: 'Hvilket hav ligger øst for Afrika?', options: ['Atlanterhavet','Indiske Ocean','Stillehavet','Ishavet'], correctIndex: 1 },
+    { text: 'Hvilket land er både i Europa og Asien?', options: ['Spanien','Rusland','Grækenland','Irland'], correctIndex: 1 },
+    { text: 'Hvad hedder Italiens hovedstad?', options: ['Rom','Milano','Venedig','Napoli'], correctIndex: 0 },
+    { text: 'Hvilket land har flest øer?', options: ['Filippinerne','Sverige','Indonesien','Japan'], correctIndex: 1 },
+    { text: 'Hvor ligger Sahara?', options: ['Sydamerika','Australien','Afrika','Asien'], correctIndex: 2 },
+    { text: 'Hvad er hovedstaden i Norge?', options: ['Oslo','Bergen','Trondheim','Stavanger'], correctIndex: 0 },
+    { text: 'Mount Everest ligger i…', options: ['Indien','Nepal/ Kina','Bhutan','Pakistan'], correctIndex: 1 },
+    { text: 'Hvilket land har byen Reykjavík?', options: ['Finland','Island','Norge','Danmark'], correctIndex: 1 },
+  ],
+};
+
+// Aktiv kategori
+let activeCategory = 'mixed';
+let currentQuestions = [];
 
 // ===============================
 // Theme (Dark/Light)
@@ -149,12 +201,12 @@ function updatePetWidgets(){
   // Streak bars
   updateStreakBars();
 }
-let lastSection = 'welcome';
 
 // 🔒 Sektioner er låst før login (kun 'auth' er tilladt)
+let lastSection = 'welcome';
 function showSection(id){
   const loggedIn = !!currentUser;
-  const all = ['welcome','auth','quiz','result','about','achievements'];
+  const all = ['welcome','auth','quiz','result','about','achievements','categories'];
   const allowed = loggedIn ? all : ['auth'];
   const target = allowed.includes(id) ? id : 'auth';
 
@@ -163,12 +215,8 @@ function showSection(id){
     if (el) el.style.display = (sec === target) ? '' : 'none';
   });
 
-  // Husk hvor vi kom fra (men ikke når vi står på achievements)
-  if (target !== 'achievements') {
-    lastSection = target;
-  }
+  if (target !== 'achievements') lastSection = target;
 }
-
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -207,37 +255,78 @@ function launchConfetti(n=120){
 }
 
 // ===============================
-// Quiz Engine (MVP)
+// Category Helpers
 // ===============================
-const QUESTIONS = [
-  { text: 'Hvad er 7 + 5?', options: ['10','12','13','14'], correctIndex: 1 },
-  { text: 'Hvilken planet kaldes den røde planet?', options: ['Venus','Jorden','Mars','Saturn'], correctIndex: 2 },
-  { text: 'Hvad hedder Danmarks hovedstad?', options: ['Aarhus','København','Odense','Esbjerg'], correctIndex: 1 },
-  { text: 'Hvilket sprog taler man i Spanien?', options: ['Fransk','Italiensk','Spansk','Tysk'], correctIndex: 2 },
-  { text: 'Hvor mange minutter er der i en time?', options: ['30','45','60','90'], correctIndex: 2 },
-  { text: 'Hvad kaldes resultatet af et multiplikationsstykke?', options: ['Sum','Kvotient','Produkt','Differens'], correctIndex: 2 },
-  { text: 'Hvilket dyr er kendt for at have en lang hals?', options: ['Giraf','Hest','Kanin','Krokodille'], correctIndex: 0 },
-  { text: 'Hvad er vandets frysepunkt i °C?', options: ['0°C','10°C','-10°C','32°C'], correctIndex: 0 },
-  { text: 'Hvilket hav ligger mellem Europa og Afrika?', options: ['Stillehavet','Middelhavet','Atlanten','Det Indiske Ocean'], correctIndex: 1 },
-  { text: 'Hvad er 9 × 3?', options: ['18','21','27','36'], correctIndex: 2 },
-];
+function setActiveCategory(key){
+  activeCategory = CATEGORIES[key] ? key : 'mixed';
+  if (currentUser){
+    currentUser.lastCategory = activeCategory;
+    saveUser();
+  }
+  const label = document.getElementById('qCatLabel');
+  if (label) label.textContent = CATEGORIES[activeCategory].title;
+}
 
+function getActiveQuestions(){
+  return QUESTIONS_BY_CATEGORY[activeCategory] || QUESTIONS_BY_CATEGORY.mixed || [];
+}
+
+function renderCategories(){
+  const grid = document.getElementById('catGrid');
+  if (!grid) return;
+  const keys = Object.keys(CATEGORIES);
+  grid.innerHTML = keys.map(k => {
+    const c = CATEGORIES[k];
+    const count = (QUESTIONS_BY_CATEGORY[k] || []).length;
+    return `
+      <button class="cat-card" type="button" data-cat="${c.key}">
+        <div class="cat-ico">${c.icon}</div>
+        <div class="cat-meta">
+          <div class="cat-title">${c.title}</div>
+          <div class="cat-desc">${c.desc} • ${count} spørgsmål</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  // Event delegation
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.cat-card');
+    if (!btn) return;
+    const key = btn.getAttribute('data-cat');
+    setActiveCategory(key);
+    startQuiz();
+  });
+}
+
+// ===============================
+// Quiz Engine
+// ===============================
 let qIndex = 0;
 let selections = [];
 
 function startQuiz(){
   if (!currentUser) return showSection('auth');
+  // Byg spørgsmål ud fra kategori
+  currentQuestions = getActiveQuestions();
+  if (!currentQuestions.length){
+    showToast('Denne kategori har ingen spørgsmål endnu.');
+    return;
+  }
   qIndex = 0;
-  selections = new Array(QUESTIONS.length).fill(null);
+  selections = new Array(currentQuestions.length).fill(null);
+  // Sæt label
+  const label = document.getElementById('qCatLabel');
+  if (label) label.textContent = CATEGORIES[activeCategory].title;
   renderQuestion();
   showSection('quiz');
 }
 
 // Store, klikbare svar-knapper (med instant select)
 function renderQuestion(){
-  const q = QUESTIONS[qIndex];
+  const q = currentQuestions[qIndex];
   document.getElementById('qText').textContent = q.text;
-  document.getElementById('qProgress').textContent = `${qIndex+1} / ${QUESTIONS.length}`;
+  document.getElementById('qProgress').textContent = `${qIndex+1} / ${currentQuestions.length}`;
 
   const box = document.getElementById('qOptions');
   box.innerHTML = '';
@@ -259,11 +348,11 @@ function renderQuestion(){
     box.appendChild(btn);
   });
 
-  document.getElementById('nextBtn').textContent = (qIndex === QUESTIONS.length - 1) ? 'Afslut' : 'Næste';
+  document.getElementById('nextBtn').textContent = (qIndex === currentQuestions.length - 1) ? 'Afslut' : 'Næste';
 }
 
 function nextQuestion(){
-  if(qIndex < QUESTIONS.length - 1){
+  if(qIndex < currentQuestions.length - 1){
     qIndex++;
     renderQuestion();
   }else{
@@ -275,7 +364,7 @@ function finishQuiz(){
   // Tæl rigtige og saml forkerte
   let correct = 0;
   const wrongItems = [];
-  QUESTIONS.forEach((q, i) => {
+  currentQuestions.forEach((q, i) => {
     if(selections[i] === q.correctIndex){
       correct++;
     } else {
@@ -295,14 +384,14 @@ function finishQuiz(){
 
   // Streak-regler (perfekte runder)
   let streak = currentUser.streak || 0;
-  const perfect = (correct === QUESTIONS.length);
+  const perfect = (correct === currentQuestions.length);
   if (perfect) streak = streak + 1;
   else streak = 0;
   currentUser.streak = streak;
 
   // Stats til achievements
   currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
-  currentUser.stats.totalAnswered += QUESTIONS.length;
+  currentUser.stats.totalAnswered += currentQuestions.length;
   currentUser.stats.totalCorrect += correct;
   currentUser.stats.quizzesCompleted += 1;
   currentUser.stats.bestStreak = Math.max(currentUser.stats.bestStreak, correct);
@@ -322,7 +411,7 @@ function finishQuiz(){
   if (titleEl) titleEl.textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
 
   document.getElementById('correctCount').textContent = correct;
-  document.getElementById('totalCount').textContent = QUESTIONS.length;
+  document.getElementById('totalCount').textContent = currentQuestions.length;
   document.getElementById('xpEarned').textContent = earned;
 
   // Fejloversigt
@@ -396,7 +485,7 @@ function checkAndUnlockAchievements(){
   if (newly.length){
     saveUser();
     renderAchievements(); // refresh list
-    newly.forEach(a => queueAchPopup(a)); // <- queue i stedet for direkte show
+    newly.forEach(a => queueAchPopup(a)); // queue
   }
 }
 
@@ -436,7 +525,6 @@ function processAchQueue(){
   achShowing = true;
   const a = achQueue.shift();
   showAchPopup(a).then(() => {
-    // lille pause mellem popups
     setTimeout(processAchQueue, 180);
   });
 }
@@ -452,15 +540,11 @@ function showAchPopup(a){
         <div class="small muted">${a.desc}</div>
       </div>
     `;
-    // show
     el.classList.remove('hide');
     el.classList.add('show');
-    // hold synlig lidt tid
     const visibleMs = 2000;
     const transitionMs = 250;
-
     setTimeout(() => {
-      // hide
       el.classList.remove('show');
       el.classList.add('hide');
       setTimeout(() => resolve(), transitionMs);
@@ -493,7 +577,7 @@ authForm?.addEventListener('submit', (e) => {
   authError.style.display = 'none';
 
   currentUser = {
-    name, age, xp: 0, streak: 0,
+    name, age, xp: 0, streak: 0, lastCategory: activeCategory,
     stats: { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 },
     achievements: { unlocked: {} }
   };
@@ -501,16 +585,26 @@ authForm?.addEventListener('submit', (e) => {
   updateHeader();
   updatePetWidgets();
   renderAchievements();
+  renderCategories();
   showSection('welcome');
 });
 
 document.getElementById('authReset')?.addEventListener('click', () => { if (authError) authError.style.display = 'none'; });
 
-document.getElementById('startQuizBtn')?.addEventListener('click', startQuiz);
+// Start quiz → gå til kategorier
+document.getElementById('startQuizBtn')?.addEventListener('click', () => {
+  if (!currentUser) { showSection('auth'); return; }
+  renderCategories();
+  showSection('categories');
+});
+
 document.getElementById('aboutBtn')?.addEventListener('click', () => showSection('about'));
 document.getElementById('backHomeBtn')?.addEventListener('click', () => showSection('welcome'));
 document.getElementById('homeBtn')?.addEventListener('click', () => showSection('welcome'));
-document.getElementById('retryBtn')?.addEventListener('click', startQuiz);
+document.getElementById('retryBtn')?.addEventListener('click', () => {
+  // Retry i samme kategori
+  startQuiz();
+});
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
 // Næste-knap – kun click (undgår dobbelt)
@@ -533,8 +627,16 @@ document.getElementById('navAchBtn')?.addEventListener('click', () => {
   showSection('achievements');
 });
 
-// Achievements: tilbage = hop tilbage til hvor vi kom fra
-document.getElementById('backFromAch')?.addEventListener('click', () => { showSection(lastSection); });
+// Back fra kategorier
+document.getElementById('backFromCategories')?.addEventListener('click', () => {
+  showSection('welcome');
+});
+
+// Back fra achievements → der, hvor vi kom fra
+document.getElementById('backFromAch')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showSection(lastSection);
+});
 
 // App Init
 (function init(){
@@ -543,18 +645,23 @@ document.getElementById('backFromAch')?.addEventListener('click', () => { showSe
   const existing = loadUser();
   if(existing){
     currentUser = existing;
-    // migration defaults
     if (typeof currentUser.xp !== 'number') currentUser.xp = 0;
     if (typeof currentUser.streak !== 'number') currentUser.streak = 0;
     currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
     currentUser.achievements = currentUser.achievements || { unlocked: {} };
+    activeCategory = currentUser.lastCategory || 'mixed';
 
     updateHeader();
     updatePetWidgets();
     renderAchievements();
+    renderCategories();
+    const label = document.getElementById('qCatLabel');
+    if (label) label.textContent = CATEGORIES[activeCategory].title;
     showSection('welcome');
   }else{
     showSection('auth');
   }
-  renderQuestion();
+  // Forbered første spørgsmål (så quiz-sektionen kan vises uden fejl hvis man hopper dertil)
+  currentQuestions = getActiveQuestions();
+  renderQuestion = renderQuestion; // no-op; defined above
 })();
