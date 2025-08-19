@@ -240,10 +240,35 @@ main{ padding:28px 16px; }
 .cat-desc{ color:var(--muted); font-size:13px; margin-top:2px }
 
 /* ========= STATS / LIST ========= */
-.wrong-list{ margin:0; padding-left:18px }
-.wrong-list li{
-  margin-bottom:10px; background:#fff1f2; border:1px solid #fecdd3; padding:8px 10px; border-radius:12px;
+/* Fejlliste: ingen bullets + bedre kontrast i dark */
+.wrong-list{
+  list-style:none;
+  margin:0;
+  padding:0;
 }
+.wrong-list li{
+  margin-bottom:10px;
+  background:#fff1f2;                 /* lys */
+  border:1px solid #fecdd3;
+  padding:12px 14px;
+  border-radius:12px;
+}
+.wrong-list li .q-title{
+  color:#111827;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.wrong-list li .your-answer{ color:#b91c1c; font-weight:700; }
+.wrong-list li .correct-answer{ color:#065f46; font-weight:700; }
+
+/* Dark varianter */
+:root[data-theme="dark"] .wrong-list li{
+  background: rgba(255, 99, 132, 0.12);
+  border: 1px solid rgba(255, 99, 132, 0.28);
+}
+:root[data-theme="dark"] .wrong-list li .q-title{ color:#e5e7eb; }
+:root[data-theme="dark"] .wrong-list li .your-answer{ color:#fca5a5; }
+:root[data-theme="dark"] .wrong-list li .correct-answer{ color:#86efac; }
 
 /* ========= TOAST ========= */
 .toast {
