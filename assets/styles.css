@@ -73,7 +73,28 @@ header{
 }
 .brand-title{ font-weight:900; letter-spacing:.2px }
 
-.user-pill{ background: color-mix(in oklab, #fff 80%, var(--soft)); }
+/* Base pill + theme-aware user pill */
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:999px; font-weight:800; font-size:14px;
+}
+.user-pill{
+  background: rgba(0,0,0,.06);            /* lys: let grå & gennemsigtig */
+  color: var(--ink);
+  border: 1px solid var(--border);
+  transition: background .25s ease, color .25s ease, border-color .25s ease;
+}
+.user-pill:hover{
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+}
+:root[data-theme="dark"] .user-pill{
+  background: rgba(255,255,255,.10);       /* mørk: passer til header */
+  color: var(--ink);                       /* --ink er lys i dark */
+  border: 1px solid var(--border);
+}
+:root[data-theme="dark"] .user-pill:hover{
+  background: rgba(255,255,255,.14);
+}
 
 /* ========= BUTTONS ========= */
 button{
