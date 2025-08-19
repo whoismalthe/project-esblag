@@ -1,9 +1,9 @@
 // ===============================
 // Version & Evolution Table
 // ===============================
-const APP_VERSION = 'V1.19.0';
+const APP_VERSION = 'V1.19.5';
 
-// Evolution mapping (fra din tabel)
+// Evolution mapping
 const EVOLUTIONS = [
   { min: 1,  max: 1,  tier: 'Egg',        emoji: '🐣',   desc: 'Starter som et lille æg' },
   { min: 2,  max: 3,  tier: 'Chick',      emoji: '🐥',   desc: 'Klækker til kylling' },
@@ -27,7 +27,7 @@ const CATEGORIES = {
   geo:   { key: 'geo',   title: 'Geografi',  icon: '🌍', desc: 'Lande, byer og natur.' },
 };
 
-// Spørgsmål pr. kategori (placeholder indhold – kan udbygges)
+// Spørgsmål pr. kategori
 const QUESTIONS_BY_CATEGORY = {
   mixed: [
     { text: 'Hvad er 7 + 5?', options: ['10','12','13','14'], correctIndex: 1 },
@@ -202,7 +202,7 @@ function updatePetWidgets(){
   updateStreakBars();
 }
 
-// 🔒 Sektioner er låst før login (kun 'auth' er tilladt)
+// Sektioner (+ lås før login)
 let lastSection = 'welcome';
 function showSection(id){
   const loggedIn = !!currentUser;
@@ -231,7 +231,7 @@ function playLevelUpEffects(){
     const el = document.getElementById(id);
     if(!el) return;
     el.style.animation = 'none';
-    el.offsetHeight;
+    el.offsetHeight; // reflow
     el.style.animation = 'pop 800ms ease';
   });
   launchConfetti(140);
@@ -289,14 +289,14 @@ function renderCategories(){
     `;
   }).join('');
 
-  // Event delegation
-  grid.addEventListener('click', (e) => {
+  // Single handler (prevents duplicate listeners)
+  grid.onclick = (e) => {
     const btn = e.target.closest('.cat-card');
     if (!btn) return;
     const key = btn.getAttribute('data-cat');
     setActiveCategory(key);
     startQuiz();
-  });
+  };
 }
 
 // ===============================
@@ -307,7 +307,6 @@ let selections = [];
 
 function startQuiz(){
   if (!currentUser) return showSection('auth');
-  // Byg spørgsmål ud fra kategori
   currentQuestions = getActiveQuestions();
   if (!currentQuestions.length){
     showToast('Denne kategori har ingen spørgsmål endnu.');
@@ -315,14 +314,12 @@ function startQuiz(){
   }
   qIndex = 0;
   selections = new Array(currentQuestions.length).fill(null);
-  // Sæt label
   const label = document.getElementById('qCatLabel');
   if (label) label.textContent = CATEGORIES[activeCategory].title;
   renderQuestion();
   showSection('quiz');
 }
 
-// Store, klikbare svar-knapper (med instant select)
 function renderQuestion(){
   const q = currentQuestions[qIndex];
   document.getElementById('qText').textContent = q.text;
@@ -361,7 +358,6 @@ function nextQuestion(){
 }
 
 function finishQuiz(){
-  // Tæl rigtige og saml forkerte
   let correct = 0;
   const wrongItems = [];
   currentQuestions.forEach((q, i) => {
@@ -379,17 +375,16 @@ function finishQuiz(){
   const xpBefore = currentUser.xp || 0;
   const levelBefore = getLevel(xpBefore);
 
-  // Basis- XP for rigtige svar
   const baseXP = correct * XP_PER_CORRECT;
 
-  // Streak-regler (perfekte runder)
+  // Streak (perfekte runder)
   let streak = currentUser.streak || 0;
   const perfect = (correct === currentQuestions.length);
   if (perfect) streak = streak + 1;
   else streak = 0;
   currentUser.streak = streak;
 
-  // Stats til achievements
+  // Stats
   currentUser.stats = currentUser.stats || { totalAnswered: 0, totalCorrect: 0, quizzesCompleted: 0, bestStreak: 0, perfectRounds: 0 };
   currentUser.stats.totalAnswered += currentQuestions.length;
   currentUser.stats.totalCorrect += correct;
@@ -397,15 +392,12 @@ function finishQuiz(){
   currentUser.stats.bestStreak = Math.max(currentUser.stats.bestStreak, correct);
   if (perfect) currentUser.stats.perfectRounds += 1;
 
-  // Multiplier: x(1 + 0.2 * streak), max 2.0x
   const multiplier = Math.min(1 + STREAK_STEP * streak, 2.0);
   const earned = Math.round(baseXP * multiplier);
 
-  // Opdater XP og gem
   currentUser.xp = xpBefore + earned;
   saveUser();
 
-  // Resultatvisning
   const levelAfter = getLevel(currentUser.xp || 0);
   const titleEl = document.getElementById('resultTitle');
   if (titleEl) titleEl.textContent = perfect ? 'Perfekt! 🌟' : 'Flot klaret! 🎯';
@@ -431,7 +423,7 @@ function finishQuiz(){
     `).join('');
   }
 
-  // Opdater UI-state
+  // UI update
   updateHeader();
   updatePetWidgets();
 
@@ -444,7 +436,7 @@ function finishQuiz(){
     playLevelUpEffects();
   }
 
-  // Achievement check (efter stats)
+  // Achievements
   checkAndUnlockAchievements();
 
   showSection('result');
@@ -484,8 +476,8 @@ function checkAndUnlockAchievements(){
 
   if (newly.length){
     saveUser();
-    renderAchievements(); // refresh list
-    newly.forEach(a => queueAchPopup(a)); // queue
+    renderAchievements();
+    newly.forEach(a => queueAchPopup(a));
   }
 }
 
@@ -529,7 +521,6 @@ function processAchQueue(){
   });
 }
 
-// Viser én popup, returnerer Promise der resolves når den er færdig (vis + hide)
 function showAchPopup(a){
   return new Promise((resolve) => {
     const el = document.getElementById('achPopup');
@@ -557,6 +548,7 @@ function showAchPopup(a){
 // ===============================
 document.getElementById('logoutBtn')?.addEventListener('click', logout);
 
+// Auth (local)
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
 authForm?.addEventListener('submit', (e) => {
@@ -591,23 +583,18 @@ authForm?.addEventListener('submit', (e) => {
 
 document.getElementById('authReset')?.addEventListener('click', () => { if (authError) authError.style.display = 'none'; });
 
-// Start quiz → gå til kategorier
+// Start quiz → kategorier
 document.getElementById('startQuizBtn')?.addEventListener('click', () => {
   if (!currentUser) { showSection('auth'); return; }
   renderCategories();
   showSection('categories');
 });
 
-document.getElementById('aboutBtn')?.addEventListener('click', () => showSection('about'));
-document.getElementById('backHomeBtn')?.addEventListener('click', () => showSection('welcome'));
+document.getElementById('retryBtn')?.addEventListener('click', () => startQuiz());
 document.getElementById('homeBtn')?.addEventListener('click', () => showSection('welcome'));
-document.getElementById('retryBtn')?.addEventListener('click', () => {
-  // Retry i samme kategori
-  startQuiz();
-});
 document.getElementById('cancelQuizBtn')?.addEventListener('click', () => showSection('welcome'));
 
-// Næste-knap – kun click (undgår dobbelt)
+// Næste
 document.getElementById('nextBtn')?.addEventListener('click', (e) => { e.preventDefault(); nextQuestion(); });
 
 // Dark mode toggle
@@ -616,10 +603,10 @@ document.getElementById('darkModeToggle')?.addEventListener('click', () => {
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
-// Nav (Achievements låst før login)
+// Nav (Achievements)
 document.getElementById('navAchBtn')?.addEventListener('click', () => {
   if (!currentUser){
-    showToast('Log ind først for at se achievements.');
+    showToast('Lav en profil først for at se achievements.');
     showSection('auth');
     return;
   }
@@ -628,15 +615,10 @@ document.getElementById('navAchBtn')?.addEventListener('click', () => {
 });
 
 // Back fra kategorier
-document.getElementById('backFromCategories')?.addEventListener('click', () => {
-  showSection('welcome');
-});
+document.getElementById('backFromCategories')?.addEventListener('click', () => showSection('welcome'));
 
-// Back fra achievements → der, hvor vi kom fra
-document.getElementById('backFromAch')?.addEventListener('click', (e) => {
-  e.preventDefault();
-  showSection(lastSection);
-});
+// Back fra achievements
+document.getElementById('backFromAchievements')?.addEventListener('click', () => showSection(lastSection));
 
 // App Init
 (function init(){
@@ -661,7 +643,7 @@ document.getElementById('backFromAch')?.addEventListener('click', (e) => {
   }else{
     showSection('auth');
   }
-  // Forbered første spørgsmål (så quiz-sektionen kan vises uden fejl hvis man hopper dertil)
+
+  // Preload questions & prepare initial UI
   currentQuestions = getActiveQuestions();
-  renderQuestion = renderQuestion; // no-op; defined above
 })();
