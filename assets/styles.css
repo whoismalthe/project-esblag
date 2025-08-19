@@ -314,3 +314,28 @@ main{ padding:32px 16px; }
     display: none !important;
   }
 }
+/* ===== CATEGORIES ===== */
+.cat-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:16px;
+}
+.cat-card{
+  display:flex; align-items:center; gap:12px;
+  border:1px solid var(--border);
+  background: var(--card);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .06s ease, border-color .15s ease, background .15s ease;
+}
+.cat-card:hover{ transform: translateY(-1px); border-color: color-mix(in oklab, var(--brand) 50%, var(--border)); }
+.cat-ico{
+  width:48px; height:48px; border-radius:12px;
+  display:grid; place-items:center; font-size:26px;
+  color:#fff; background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+.cat-meta{ flex:1 }
+.cat-title{ font-weight:900; }
+.cat-desc{ color:var(--muted); font-size:13px; margin-top:2px }
