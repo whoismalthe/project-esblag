@@ -5,34 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Project ESBLAG — MVP</title>
 
-    
-    <!-- Fonts -->
+    <!-- Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.19.5">
+    <link rel="stylesheet" href="assets/styles.css?v=1.19.6">
   </head>
   <body>
     <!-- Header -->
     <header>
-      <div class="wrap row">
+      <div class="wrap row header-left">
         <div class="brand">
           <div class="logo">ES</div>
           <div>
-            Project ESBLAG
+            <div class="brand-title">Project ESBLAG</div>
             <div class="small muted">Education Should Be Like A Game • V1.19.5</div>
           </div>
         </div>
-        <div class="spacer"></div>
-
-        <!-- Dark mode toggle -->
+      </div>
+      <div class="wrap row header-right">
         <button id="darkModeToggle" class="ghost" aria-label="Skift tema" type="button">🌙 Dark</button>
-
-        <!-- Kun Achievements i nav -->
         <button id="navAchBtn" class="ghost" type="button">🏆 Achievements</button>
-
         <div id="userBadge" class="pill" style="display:none"></div>
         <button id="logoutBtn" class="ghost" style="display:none" type="button">Log ud</button>
       </div>
@@ -40,12 +35,12 @@
 
     <main class="wrap">
 
-      <!-- Auth (local profile only) -->
+      <!-- Lokal profil -->
       <section id="auth">
         <div class="grid">
           <div class="card">
-            <h2 style="margin-top:0">Lav en lokal profil</h2>
-            <p class="muted">Vi gemmer kun lokalt i din browser.</p>
+            <h2 class="h2">Lav en lokal profil</h2>
+            <p class="muted">Vi gemmer kun i din browser.</p>
             <form id="authForm" class="auth-form">
               <label for="authName">Navn</label>
               <input id="authName" name="name" type="text" placeholder="Fx Malthe" required>
@@ -59,8 +54,8 @@
             </form>
           </div>
           <div class="card">
-            <h2>Om Project ESBLAG</h2>
-            <p>Education Should Be Like A Game 🚀 — spil dig til viden, level op, og lås achievements op.</p>
+            <h2 class="h2">Om Project ESBLAG</h2>
+            <p>Spil dig til viden, level op, og lås achievements op. Simpelt og sjovt. 🚀</p>
           </div>
         </div>
       </section>
@@ -70,30 +65,31 @@
         <div class="grid">
           <div class="card welcome">
             <h1 class="big-title">Velkommen, <span id="welcomeName">ven</span> 👋</h1>
-            <p class="subtitle">Klar til at lære gennem leg?</p>
+            <p class="subtitle">Vælg en kategori og kør en kort quiz.</p>
 
             <!-- Pet / Level -->
             <div class="pet">
               <div class="bubble"><span id="petEmoji">🐣</span></div>
-              <div>
-                <div class="level-box">Level <span id="levelText">1</span></div>
-                <div id="tierLine" class="tier-line">Egg — Starter som et lille æg</div>
-                <div class="xpbar" style="margin:8px 0 4px"><span id="xpFill" style="width:0%"></span></div>
+              <div class="metrics">
+                <div class="level-line">
+                  <span class="level-box">Level <span id="levelText">1</span></span>
+                  <span id="tierLine" class="tier-line">Egg — Starter som et lille æg</span>
+                </div>
+                <div class="xpbar meter"><span id="xpFill" style="width:0%"></span></div>
                 <div id="xpLabel" class="small muted">0 / 50 XP til næste level</div>
               </div>
             </div>
 
             <!-- Streak -->
-            <div style="margin-top:12px">
+            <div class="metrics" style="margin-top:10px">
               <div class="row">
-                <div class="streak-icon" title="Perfekte runder i træk">🔥</div>
-                <strong>Streak:</strong>
-                <span id="streakCountWelcome">0</span>
+                <span class="muted">🔥 Streak:</span>
+                <strong id="streakCountWelcome">0</strong>
                 <span class="muted">• Bonus</span>
                 <strong id="streakBonusWelcome">x1.0</strong>
                 <span id="streakMaxWelcome" class="pill" style="display:none">MAX</span>
               </div>
-              <div class="streakbar" style="margin-top:6px"><span id="streakFillWelcome" style="width:0%"></span></div>
+              <div class="streakbar meter"><span id="streakFillWelcome" style="width:0%"></span></div>
             </div>
 
             <div class="row" style="margin-top:14px">
@@ -106,8 +102,8 @@
       <!-- Categories -->
       <section id="categories" style="display:none">
         <div class="card">
-          <h2 style="margin-top:0">Vælg kategori</h2>
-          <p class="muted small">Vælg et tema – quizzen bruger spørgsmål fra den valgte kategori.</p>
+          <h2 class="h2">Vælg kategori</h2>
+          <p class="muted small">Quizzen bruger spørgsmål fra den valgte kategori.</p>
           <div id="catGrid" class="cat-grid"></div>
           <div class="row" style="margin-top:14px">
             <button class="secondary" id="backFromCategories" type="button">Tilbage</button>
@@ -119,12 +115,12 @@
       <section id="quiz" style="display:none">
         <div class="card quiz">
           <div class="row">
-            <div><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span> • 🔥<span id="streakBadgeQuiz">0</span></div>
+            <div class="muted"><strong>Quiz</strong> • <span id="qCatLabel">Blandet</span> • <span id="qProgress">1 / 10</span> • 🔥<span id="streakBadgeQuiz">0</span></div>
           </div>
           <div id="qText" class="question">Spørgsmål</div>
           <div id="qOptions" class="options"></div>
           <div class="row">
-            <button id="nextBtn" class="secondary" type="button">Næste</button>
+            <button id="nextBtn" class="primary" type="button">Næste</button>
             <button id="cancelQuizBtn" class="ghost" type="button">Afbryd</button>
           </div>
         </div>
@@ -133,45 +129,45 @@
       <!-- Result -->
       <section id="result" style="display:none">
         <div class="card">
-          <h2 id="resultTitle" style="margin-top:0">Flot klaret! 🎯</h2>
+          <h2 id="resultTitle" class="h2">Flot klaret! 🎯</h2>
 
           <!-- Pet / Level Snapshot -->
           <div class="pet" style="margin-top:8px">
             <div class="bubble"><span id="petEmojiResult">🐣</span></div>
-            <div>
-              <div class="level-box">Level <span id="levelTextResult">1</span></div>
-              <div id="tierLineResult" class="tier-line">Egg — Starter som et lille æg</div>
-              <div class="xpbar" style="margin:8px 0 4px"><span id="xpFillResult" style="width:0%"></span></div>
+            <div class="metrics">
+              <div class="level-line">
+                <span class="level-box">Level <span id="levelTextResult">1</span></span>
+                <span id="tierLineResult" class="tier-line">Egg — Starter som et lille æg</span>
+              </div>
+              <div class="xpbar meter"><span id="xpFillResult" style="width:0%"></span></div>
               <div id="xpLabelResult" class="small muted">0 / 50 XP til næste level</div>
             </div>
           </div>
 
           <!-- Streak -->
-          <div style="margin-top:10px">
+          <div class="metrics" style="margin-top:8px">
             <div class="row">
-              <div class="streak-icon" title="Perfekte runder i træk">🔥</div>
-              <strong>Streak:</strong>
-              <span id="streakCountResult">0</span>
+              <span class="muted">🔥 Streak:</span>
+              <strong id="streakCountResult">0</strong>
               <span class="muted">• Bonus</span>
               <strong id="streakBonusResult">x1.0</strong>
               <span id="streakMaxResult" class="pill" style="display:none">MAX</span>
             </div>
-            <div class="streakbar" style="margin-top:6px"><span id="streakFillResult" style="width:0%"></span></div>
+            <div class="streakbar meter"><span id="streakFillResult" style="width:0%"></span></div>
           </div>
 
           <!-- Stats -->
+          <div class="row stat-row">
+            <div class="chip">✅ Rigtige: <strong id="correctCount">0</strong>/<span id="totalCount">0</span></div>
+            <div class="chip">⭐ XP tjent: <strong id="xpEarned">0</strong></div>
+          </div>
+
+          <div id="wrongAnswers" style="margin-top:10px; display:none">
+            <h3 class="h3">Hvor gik det galt?</h3>
+            <ul id="wrongList" class="wrong-list"></ul>
+          </div>
+
           <div class="row" style="margin-top:12px">
-            <div class="pill">✅ Rigtige: <strong id="correctCount">0</strong>/<span id="totalCount">0</span></div>
-            <div class="pill">⭐ XP tjent: <strong id="xpEarned">0</strong></div>
-          </div>
-
-          <!-- Wrong answers -->
-          <div id="wrongAnswers" style="margin-top:14px; display:none">
-            <h3 style="margin:6px 0 8px">Hvor gik det galt?</h3>
-            <ul id="wrongList" style="margin:0; padding-left:18px"></ul>
-          </div>
-
-          <div class="row" style="margin-top:14px">
             <button id="retryBtn" type="button">Prøv igen</button>
             <button id="homeBtn" class="secondary" type="button">Hjem</button>
           </div>
@@ -181,19 +177,11 @@
       <!-- Achievements -->
       <section id="achievements" style="display:none">
         <div class="card">
-          <h2>🏆 Achievements</h2>
+          <h2 class="h2">🏆 Achievements</h2>
           <div id="achGrid" class="ach-grid"></div>
-          <div class="row" style="margin-top:14px">
+          <div class="row" style="margin-top:12px">
             <button class="secondary" id="backFromAchievements" type="button">Tilbage</button>
           </div>
-        </div>
-      </section>
-
-      <!-- About -->
-      <section id="about" style="display:none">
-        <div class="card">
-          <h2>Om Project ESBLAG</h2>
-          <p>Education Should Be Like A Game 🚀</p>
         </div>
       </section>
     </main>
@@ -211,6 +199,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="assets/app.js?v=1.19.5" defer></script>
+    <script src="assets/app.js?v=1.19.6" defer></script>
   </body>
 </html>
