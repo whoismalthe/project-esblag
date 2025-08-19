@@ -307,8 +307,9 @@ main{ padding:32px 16px; }
 .ach-popup.hide{
   opacity: 0; transform: translateY(-8px);
 }
-@media (max-width: 600px) {
-  .logo {
-    display: none;
+@media (max-width: 768px) {
+  /* Brug højere specificitet + !important for at slå .brand .logo display:grid */
+  .brand .logo {
+    display: none !important;
   }
 }
