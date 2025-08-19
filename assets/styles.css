@@ -152,6 +152,17 @@ main{ padding:28px 16px; }
 
 /* ========= QUIZ ========= */
 .quiz{ display:grid; gap:16px; }
+
+/* TOP-BJÆLKE I QUIZ */
+.quiz-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:6px;
+}
+.quiz-breadcrumb{ color:var(--ink); font-weight:800 }
+.quiz-top .quiz-streak{ color:var(--muted); font-weight:800 }
+.kicker{ text-transform:uppercase; letter-spacing:.4px }
+
+/* Spørgsmål + svar */
 .question{ font-size:22px; font-weight:900; margin:4px 0 6px }
 .options{ display:grid; gap:12px }
 .answer-btn{
@@ -164,10 +175,23 @@ main{ padding:28px 16px; }
   transition: transform .04s ease, border-color .15s ease, background .15s ease, color .15s ease;
 }
 .answer-btn:hover{ transform: translateY(-1px); }
+
+/* Lys tema: klassisk lilla som valgt */
 .answer-btn.selected{
   background: #6e61f6; color:#fff; border-color:#5b4bf2; box-shadow:none;
 }
-:root[data-theme="dark"] .answer-btn{ background:#0f172a; }
+
+/* Dark: valgt bliver blå (som dit screenshot) */
+:root[data-theme="dark"] .answer-btn{
+  background:#0f172a;
+  border-color:rgba(255,255,255,0.08);
+}
+:root[data-theme="dark"] .answer-btn.selected{
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  border-color:#1e40af;
+  color:#fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.18) inset;
+}
 
 /* ========= CATEGORY GRID ========= */
 .cat-grid{
