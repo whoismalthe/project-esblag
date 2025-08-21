@@ -20,6 +20,10 @@
   --streak-bg: #fff6e6;
   --streak-fill: #f59e0b;
   --streak-border: #fde3b0;
+
+  --meter-width: clamp(260px, 60vw, 420px);
+  --level-bg: #eef3ff;
+  --text-muted: #666;
 }
 :root[data-theme="dark"]{
   --bg: #0b1020;
@@ -35,6 +39,9 @@
   --streak-bg: #3a2a12;
   --streak-fill: #ffb244;
   --streak-border: #7a4a16;
+
+  --level-bg: #1d243a;
+  --text-muted: #9aa3b2;
 }
 
 /* ========= GLOBAL ========= */
@@ -50,6 +57,13 @@ body{
   color:var(--ink);
   font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
   line-height:1.55;
+}
+
+/* Better focus for keyboard users */
+:focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--brand) 60%, #fff);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 
 /* ========= HEADER ========= */
@@ -79,7 +93,7 @@ header{
   padding:6px 12px; border-radius:999px; font-weight:800; font-size:14px;
 }
 .user-pill{
-  background: rgba(0,0,0,.06);            /* lys: let grå & gennemsigtig */
+  background: rgba(0,0,0,.06);
   color: var(--ink);
   border: 1px solid var(--border);
   transition: background .25s ease, color .25s ease, border-color .25s ease;
@@ -88,8 +102,8 @@ header{
   background: color-mix(in oklab, var(--card) 70%, transparent);
 }
 :root[data-theme="dark"] .user-pill{
-  background: rgba(255,255,255,.10);       /* mørk: passer til header */
-  color: var(--ink);                       /* --ink er lys i dark */
+  background: rgba(255,255,255,.10);
+  color: var(--ink);
   border: 1px solid var(--border);
 }
 :root[data-theme="dark"] .user-pill:hover{
@@ -102,12 +116,13 @@ button{
   border-radius:14px; padding:12px 16px;
   transition: transform .06s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
 }
+button:disabled{ opacity:.6; cursor:not-allowed; }
 .pill-btn{ border-radius:999px }
 button.primary{
   background: linear-gradient(135deg, #3b82f6, #06b6d4);
   color:#fff; box-shadow: var(--shadow);
 }
-button.primary:hover{ transform: translateY(-1px); }
+button.primary:hover:not(:disabled){ transform: translateY(-1px); }
 button.secondary{
   background:var(--soft-2); color:#3730a3; border:1px solid var(--border)
 }
@@ -146,7 +161,7 @@ main{ padding:28px 16px; }
 .error{ color:var(--danger); font-weight:800 }
 
 /* ========= PET / XP ========= */
-.pet{ display:flex; align-items:center; gap:16px; }
+.pet{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .pet .bubble{
   width:76px; height:76px; border-radius:18px; display:grid; place-items:center;
   font-size:38px;
@@ -157,26 +172,26 @@ main{ padding:28px 16px; }
   background: linear-gradient(135deg, #0b1220, #121a2e);
   border-color: #2a2f45;
 }
-.metrics{ display:flex; flex-direction:column; gap:6px }
+.metrics{ display:flex; flex-direction:column; gap:6px; width:var(--meter-width); max-width:100%; }
 .level-line {
   display: flex;
-  align-items: center; /* centrer tekst lodret */
-  gap: 8px;           /* afstand mellem Level-boksen og beskrivelsen */
-  margin-bottom: 6px; /* luft ned til XP-baren */
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
 }
-.meter{ width: clamp(240px, 60vw, 420px); }   /* samme bredde som i din gamle stil */
+.meter{ width:100%; }
 
 .xpbar{ height:10px; background:color-mix(in oklab, var(--ink) 10%, transparent); border-radius:999px; overflow:hidden; }
 .xpbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--brand), #00d2ff); transition: width .5s ease }
 .tier-line {
   font-size: 0.95rem;
-  color: var(--text-muted, #666);
+  color: var(--text-muted);
 }
 .level-box {
-  background: var(--accent-bg, #eef3ff);
+  background: var(--level-bg);
   padding: 4px 8px;
   border-radius: 6px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ========= STREAK ========= */
@@ -186,8 +201,6 @@ main{ padding:28px 16px; }
 
 /* ========= QUIZ ========= */
 .quiz{ display:grid; gap:16px; }
-
-/* TOP-BJÆLKE I QUIZ */
 .quiz-top{
   display:flex; align-items:center; justify-content:space-between;
   gap:12px; margin-bottom:6px;
@@ -209,13 +222,14 @@ main{ padding:28px 16px; }
   transition: transform .04s ease, border-color .15s ease, background .15s ease, color .15s ease;
 }
 .answer-btn:hover{ transform: translateY(-1px); }
+.answer-btn:focus-visible{ outline-offset: 3px; }
 
-/* Lys tema: klassisk lilla som valgt */
+/* Light: selected = purple */
 .answer-btn.selected{
   background: #6e61f6; color:#fff; border-color:#5b4bf2; box-shadow:none;
 }
 
-/* Dark: valgt bliver blå (som dit screenshot) */
+/* Dark theming */
 :root[data-theme="dark"] .answer-btn{
   background:#0f172a;
   border-color:rgba(255,255,255,0.08);
@@ -253,7 +267,6 @@ main{ padding:28px 16px; }
 .cat-desc{ color:var(--muted); font-size:13px; margin-top:2px }
 
 /* ========= STATS / LIST ========= */
-/* Fejlliste: ingen bullets + bedre kontrast i dark */
 .wrong-list{
   list-style:none;
   margin:0;
@@ -261,7 +274,7 @@ main{ padding:28px 16px; }
 }
 .wrong-list li{
   margin-bottom:10px;
-  background:#fff1f2;                 /* lys */
+  background:#fff1f2;
   border:1px solid #fecdd3;
   padding:12px 14px;
   border-radius:12px;
@@ -274,7 +287,6 @@ main{ padding:28px 16px; }
 .wrong-list li .your-answer{ color:#b91c1c; font-weight:700; }
 .wrong-list li .correct-answer{ color:#065f46; font-weight:700; }
 
-/* Dark varianter */
 :root[data-theme="dark"] .wrong-list li{
   background: rgba(255, 99, 132, 0.12);
   border: 1px solid rgba(255, 99, 132, 0.28);
@@ -330,3 +342,15 @@ main{ padding:28px 16px; }
 .ach-popup .badge-ico{ width:36px; height:36px; font-size:18px; border-radius:10px; }
 .ach-popup.show{ opacity: 1; transform: translateY(0); }
 .ach-popup.hide{ opacity: 0; transform: translateY(-8px); }
+
+/* ========= ANIMATIONS ========= */
+@keyframes pop{
+  0%{ transform: scale(.85); }
+  40%{ transform: scale(1.15); }
+  100%{ transform: scale(1); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ animation: none !important; transition: none !important; }
+}
