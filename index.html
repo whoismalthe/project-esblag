@@ -11,42 +11,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
     <!-- CSS (cache-bust) -->
-    <link rel="stylesheet" href="assets/styles.css?v=1.19.7.2">
+    <link rel="stylesheet" href="assets/styles.css?v=1.20.0">
   </head>
   <body>
     <!-- Header -->
     <header>
       <div class="wrap row header-left">
-        <div class="brand">
-          <div class="logo">ES</div>
+        <div class="brand" aria-label="Brand">
+          <div class="logo" aria-hidden="true">ES</div>
           <div>
             <div class="brand-title">Project ESBLAG</div>
-            <div class="small muted">Education Should Be Like A Game • V1.19.7.2</div>
+            <div class="small muted">Education Should Be Like A Game • V1.20.0</div>
           </div>
         </div>
       </div>
       <div class="wrap row header-right">
-        <button id="darkModeToggle" class="ghost pill-btn" type="button">🌙 Dark</button>
+        <button id="darkModeToggle" class="ghost pill-btn" type="button" aria-pressed="false">🌙 Dark</button>
         <button id="navAchBtn" class="ghost pill-btn" type="button">🏆 Achievements</button>
-        <div id="userBadge" class="pill user-pill" style="display:none"></div>
+        <div id="userBadge" class="pill user-pill" style="display:none" aria-live="polite"></div>
         <button id="logoutBtn" class="ghost pill-btn" style="display:none" type="button">Log ud</button>
       </div>
     </header>
 
-    <main class="wrap">
-
+    <main class="wrap" id="main" tabindex="-1">
       <!-- Lokal profil (kun navn + alder) -->
-      <section id="auth">
+      <section id="auth" aria-labelledby="authTitle">
         <div class="grid">
           <div class="card">
-            <h2 class="h2">Lav en lokal profil</h2>
+            <h2 id="authTitle" class="h2">Lav en lokal profil</h2>
             <p class="muted">Vi gemmer kun i din browser.</p>
-            <form id="authForm" class="auth-form">
+            <form id="authForm" class="auth-form" novalidate>
               <label for="authName">Navn</label>
-              <input id="authName" name="name" type="text" placeholder="Fx Malthe" required>
+              <input id="authName" name="name" type="text" placeholder="Fx Malthe" required autocomplete="name" />
               <label for="authAge">Alder</label>
-              <input id="authAge" name="age" type="number" min="8" max="99" placeholder="Fx 18" required>
-              <div id="authError" class="error" style="display:none; margin-top:8px"></div>
+              <input id="authAge" name="age" type="number" min="8" max="99" placeholder="Fx 18" required inputmode="numeric" />
+              <div id="authError" class="error" style="display:none; margin-top:8px" role="alert"></div>
               <div class="row" style="margin-top:12px">
                 <button type="submit" class="primary pill-btn">Kom ind</button>
                 <button id="authReset" type="button" class="secondary pill-btn">Nulstil fejl</button>
@@ -61,22 +60,22 @@
       </section>
 
       <!-- Welcome -->
-      <section id="welcome" style="display:none">
+      <section id="welcome" style="display:none" aria-labelledby="welcomeTitle">
         <div class="grid">
           <div class="card welcome">
-            <h1 class="big-title">Velkommen, <span id="welcomeName">ven</span> 👋</h1>
+            <h1 id="welcomeTitle" class="big-title">Velkommen, <span id="welcomeName">ven</span> 👋</h1>
             <p class="subtitle">Vælg en kategori og kør en kort quiz.</p>
 
             <!-- Pet / Level -->
             <div class="pet">
-              <div class="bubble"><span id="petEmoji">🐣</span></div>
+              <div class="bubble" aria-hidden="true"><span id="petEmoji">🐣</span></div>
               <div class="metrics">
                 <div class="level-line">
                   <span class="level-box">Level <span id="levelText">1</span></span>
                   <span id="tierLine" class="tier-line">Egg — Starter som et lille æg</span>
                 </div>
-                <div class="xpbar meter"><span id="xpFill" style="width:0%"></span></div>
-                <div id="xpLabel" class="small muted">0 / 50 XP til næste level</div>
+                <div class="xpbar meter" aria-label="XP fremskridt" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="xpFill" style="width:0%"></span></div>
+                <div id="xpLabel" class="small muted" aria-live="polite">0 / 50 XP til næste level</div>
               </div>
             </div>
 
@@ -89,7 +88,7 @@
                 <strong id="streakBonusWelcome">x1.0</strong>
                 <span id="streakMaxWelcome" class="pill" style="display:none">MAX</span>
               </div>
-              <div class="streakbar meter"><span id="streakFillWelcome" style="width:0%"></span></div>
+              <div class="streakbar meter" aria-label="Streak fremskridt" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="streakFillWelcome" style="width:0%"></span></div>
             </div>
 
             <div class="row" style="margin-top:14px">
@@ -100,11 +99,11 @@
       </section>
 
       <!-- Categories -->
-      <section id="categories" style="display:none">
+      <section id="categories" style="display:none" aria-labelledby="catTitle">
         <div class="card">
-          <h2 class="h2">Vælg kategori</h2>
+          <h2 id="catTitle" class="h2">Vælg kategori</h2>
           <p class="muted small">Quizzen bruger spørgsmål fra den valgte kategori.</p>
-          <div id="catGrid" class="cat-grid"></div>
+          <div id="catGrid" class="cat-grid" role="list"></div>
           <div class="row" style="margin-top:14px">
             <button class="secondary pill-btn" id="backFromCategories" type="button">Tilbage</button>
           </div>
@@ -112,12 +111,12 @@
       </section>
 
       <!-- Quiz -->
-      <section id="quiz" style="display:none">
+      <section id="quiz" style="display:none" aria-labelledby="quizTitle">
         <div class="card quiz">
           <!-- NY TOPBJÆLKE: breadcrumb + streak -->
           <div class="quiz-top">
             <div class="quiz-breadcrumb">
-              <span class="kicker">Quiz</span>
+              <span class="kicker" id="quizTitle">Quiz</span>
               • <span id="qCatLabel">Blandet</span>
               • <span id="qProgress">1 / 10</span>
             </div>
@@ -125,16 +124,16 @@
           </div>
 
           <h2 id="qText" class="question">Spørgsmål</h2>
-          <div id="qOptions" class="options"></div>
+          <div id="qOptions" class="options" role="group" aria-label="Svarmuligheder"></div>
           <div class="row">
-            <button id="nextBtn" class="primary pill-btn" type="button">Næste</button>
+            <button id="nextBtn" class="primary pill-btn" type="button" disabled>Næste</button>
             <button id="cancelQuizBtn" class="ghost pill-btn" type="button">Afbryd</button>
           </div>
         </div>
       </section>
 
       <!-- Result -->
-      <section id="result" style="display:none">
+      <section id="result" style="display:none" aria-labelledby="resultTitle">
         <div class="card result-card center">
           <h2 id="resultTitle" class="big-title">Flot klaret! 🎯</h2>
           <p class="subtitle">Du fik <strong id="correctCount">0</strong>/<span id="totalCount">0</span> rigtige.</p>
@@ -142,21 +141,21 @@
 
           <!-- Pet / Level Snapshot -->
           <div class="pet center" style="justify-content:center; margin-top:6px">
-            <div class="bubble"><span id="petEmojiResult">🐣</span></div>
+            <div class="bubble" aria-hidden="true"><span id="petEmojiResult">🐣</span></div>
             <div class="metrics">
               <div class="level-line">
                 <span class="level-box">Level <span id="levelTextResult">1</span></span>
                 <span id="tierLineResult" class="tier-line">Egg — Starter som et lille æg</span>
               </div>
-              <div class="xpbar meter"><span id="xpFillResult" style="width:0%"></span></div>
-              <div id="xpLabelResult" class="small muted">0 / 50 XP til næste level</div>
+              <div class="xpbar meter" aria-label="XP fremskridt" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="xpFillResult" style="width:0%"></span></div>
+              <div id="xpLabelResult" class="small muted" aria-live="polite">0 / 50 XP til næste level</div>
               <div class="metrics" style="margin-top:6px">
                 <div class="row center" style="justify-content:flex-start">
                   <span class="muted">Streak:</span>&nbsp;🔥<strong id="streakCountResult">0</strong>
                   <span class="muted">• Bonus:</span>&nbsp;<strong id="streakBonusResult">x1.0</strong>
                   <span id="streakMaxResult" class="pill" style="display:none">MAX</span>
                 </div>
-                <div class="streakbar meter"><span id="streakFillResult" style="width:0%"></span></div>
+                <div class="streakbar meter" aria-label="Streak fremskridt" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="streakFillResult" style="width:0%"></span></div>
               </div>
             </div>
           </div>
@@ -173,25 +172,14 @@
           </div>
         </div>
       </section>
-
-      <!-- Achievements -->
-      <section id="achievements" style="display:none">
-        <div class="card">
-          <h2 class="h2">🏆 Achievements</h2>
-          <div id="achGrid" class="ach-grid"></div>
-          <div class="row" style="margin-top:12px">
-            <button class="secondary pill-btn" id="backFromAchievements" type="button">Tilbage</button>
-          </div>
-        </div>
-      </section>
     </main>
 
     <!-- Toast -->
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <!-- Achievement Popup -->
-    <div id="achPopup" class="ach-popup">
-      <div class="badge-ico">🏆</div>
+    <div id="achPopup" class="ach-popup" aria-live="polite">
+      <div class="badge-ico" aria-hidden="true">🏆</div>
       <div>
         <div id="achPopupTitle" class="badge-title">Achievement!</div>
         <div id="achPopupDesc" class="badge-desc small">Du har låst en ny ting op</div>
@@ -199,6 +187,6 @@
     </div>
 
     <!-- Scripts (cache-bust) -->
-    <script src="assets/app.js?v=1.19.7.1" defer></script>
+    <script src="assets/app.js?v=1.20.0" defer></script>
   </body>
 </html>
